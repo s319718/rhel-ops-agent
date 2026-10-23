@@ -86,6 +86,26 @@ class RuleEngineTests(unittest.TestCase):
         self.assertEqual(self.engine.plan("你是谁")["intent"], "identity")
         self.assertEqual(self.engine.plan("what can you do?")["language"], "en")
 
+    def test_pinyin_small_talk_is_supported(self) -> None:
+        cases = {
+            "nihao": "greeting",
+            "chi le ma": "meal",
+            "xiexie": "thanks",
+            "neng zuo shenme": "help",
+        }
+        for prompt, intent in cases.items():
+            with self.subTest(prompt=prompt):
+                plan = self.engine.plan(prompt)
+                self.assertEqual(plan["status"], "chat")
+                self.assertEqual(plan["intent"], intent)
+                self.assertEqual(plan["language"], "zh")
+
+    def test_unsupported_input_returns_help_suggestions(self) -> None:
+        plan = self.engine.plan("soo")
+        self.assertEqual(plan["status"], "unsupported")
+        self.assertTrue(plan["suggestions"])
+        self.assertIn("hello", plan["message"])
+
     def test_greeting_prefix_does_not_hide_real_action(self) -> None:
         plan = self.engine.plan("你好，查看磁盘空间")
         self.assertEqual(plan["status"], "ready")

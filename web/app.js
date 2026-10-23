@@ -519,7 +519,12 @@ function renderPlanResponse(message, data, overrides) {
     return;
   }
   if (plan.status === "unsupported") {
-    appendChat("assistant", `<p>${escapeHtml(plan.message)}</p>`);
+    const suggestions = (plan.suggestions || []).map((item) => `
+      <button class="quick-chip" data-prompt="${escapeHtml(item)}">${escapeHtml(item)}</button>
+    `).join("");
+    appendChat("assistant", `
+      <p>${escapeHtml(plan.message)}</p>
+      ${suggestions ? `<div class="chat-suggestions">${suggestions}</div>` : ""}`);
     return;
   }
   if (plan.status === "chat") {

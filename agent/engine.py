@@ -67,7 +67,7 @@ PLAN_MESSAGES = {
     "zh": {
         "empty": "请输入你想完成的操作，例如：查看磁盘空间。",
         "blocked": "已识别并拦截高风险操作，没有执行任何命令。",
-        "unsupported": "没有找到受支持的操作。可以换一种说法，或在规则库中查看可用指令。",
+        "unsupported": "没有找到受支持的操作。可以换一种说法，例如“查看磁盘空间”或“你好”，也可以在 /help 或规则库中查看可用指令。",
         "needs_input": "还需要补充一些信息，确认后我会生成完整操作计划。",
         "ready": "已生成操作计划。请先核对每一步，再决定是否执行。",
         "confirm_high": "确认执行高风险操作",
@@ -76,7 +76,7 @@ PLAN_MESSAGES = {
     "en": {
         "empty": "Enter an operation, for example: show disk usage.",
         "blocked": "A high-risk operation was detected and blocked. No command was executed.",
-        "unsupported": "No supported operation was found. Rephrase the request or check the rules page.",
+        "unsupported": "No supported operation was found. Try a request such as \"show disk usage\" or \"hello\", or use /help to see available commands.",
         "needs_input": "More information is required before a complete operation plan can be generated.",
         "ready": "The operation plan is ready. Review every step before execution.",
         "confirm_high": "Confirm high-risk operations",
@@ -87,7 +87,7 @@ PLAN_MESSAGES = {
 SMALL_TALK_REPLIES = {
     "identity": {
         "patterns": [
-            r"(你是谁|你叫什么|介绍(一下)?你自己|你是什么|who\s+are\s+you|what\s+are\s+you)",
+            r"(你是谁|你叫什么|介绍(一下)?你自己|你是什么|who\s+are\s+you|what\s+are\s+you|ni\s+shi\s+shui|ni\s+jiao\s+shenme)",
         ],
         "zh": (
             "我是 RHEL 护航员，一个运行在 Linux 本机的安全运维 Agent。"
@@ -103,7 +103,7 @@ SMALL_TALK_REPLIES = {
     },
     "meal": {
         "patterns": [
-            r"(吃了吗|吃饭了吗|你吃饭了|吃过饭了吗|吃了没)",
+            r"(吃了吗|吃饭了吗|你吃饭了|吃过饭了吗|吃了没|chi\s+le\s+ma|ni\s+chi\s+le\s+ma|chi\s+fan\s+le\s+ma)",
             r"\b(have you eaten|did you eat|are you hungry)\b",
         ],
         "zh": "我不用吃饭，电源和稳定的网络就是我的“口粮”。你吃了吗？需要我顺便检查一下系统状态吗？",
@@ -111,7 +111,7 @@ SMALL_TALK_REPLIES = {
     },
     "help": {
         "patterns": [
-            r"(帮助|怎么用|如何使用|你能做什么|你会什么|有什么功能|能帮我做什么|使用说明)",
+            r"(帮助|怎么用|如何使用|你能做什么|你会什么|有什么功能|能帮我做什么|使用说明|neng\s+zuo\s+shenme|bang\s+zhu|zen\s+me\s+yong)",
             r"\b(help|how\s+to\s+use|what\s+can\s+you\s+do|capabilities|features)\b",
         ],
         "zh": (
@@ -128,7 +128,7 @@ SMALL_TALK_REPLIES = {
     },
     "thanks": {
         "patterns": [
-            r"(谢谢|感谢|辛苦了|多谢)",
+            r"(谢谢|感谢|辛苦了|多谢|xie\s*xie|duo\s*xie)",
             r"\b(thanks|thank you|appreciate it)\b",
         ],
         "zh": "不客气。需要检查系统、查看风险或执行受控操作时，直接告诉我即可。",
@@ -137,10 +137,19 @@ SMALL_TALK_REPLIES = {
     "greeting": {
         "patterns": [
             r"(^|[，,。.!！\s])(你好|您好|嗨|哈喽|在吗)([，,。.!！\s]|$)",
-            r"\b(hello|hi|hey|good morning|good afternoon|good evening)\b",
+            r"\b(hello|hi|hey|good morning|good afternoon|good evening|ni\s*hao|nin\s*hao)\b",
         ],
         "zh": "你好，我是 RHEL 护航员。你可以告诉我想查看什么，或者直接说“你能做什么”。",
         "en": "Hello. I am RHEL Ops Agent. Tell me what you want to inspect, or ask \"what can you do?\"",
+    },
+    "goodbye": {
+        "patterns": [
+            r"(再见|拜拜|回头见)",
+            r"\b(goodbye|bye|see you)\b",
+            r"\b(zai\s*jian|bai\s*bai)\b",
+        ],
+        "zh": "再见。需要检查系统或执行受控操作时再叫我。",
+        "en": "Goodbye. Call me when you need a system check or a controlled operation.",
     },
 }
 
@@ -302,6 +311,12 @@ SEMANTIC_ALIASES = {
         ],
     },
 }
+
+PINYIN_CHAT_HINTS = re.compile(
+    r"(?i)\b(?:ni\s*hao|nin\s*hao|chi\s*le\s*ma|chi\s+fan\s+le\s+ma|"
+    r"xie\s*xie|duo\s*xie|neng\s+zuo\s+shenme|bang\s+zhu|zen\s+me\s+yong|"
+    r"ni\s+shi\s+shui|ni\s+jiao\s+shenme|zai\s*jian|bai\s*bai)\b"
+)
 
 SYSTEM_SERVICES = (
     "sshd",
@@ -910,6 +925,8 @@ class RuleEngine:
     ) -> dict[str, Any]:
         message = normalize_message(message)
         language = detect_language(message)
+        if PINYIN_CHAT_HINTS.search(message):
+            language = "zh"
         messages = PLAN_MESSAGES[language]
         if not message:
             return {
@@ -953,6 +970,7 @@ class RuleEngine:
                 "status": "unsupported",
                 "language": language,
                 "message": messages["unsupported"],
+                "suggestions": SMALL_TALK_SUGGESTIONS[language],
                 "steps": [],
             }
 

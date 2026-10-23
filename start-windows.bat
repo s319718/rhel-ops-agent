@@ -7,6 +7,13 @@ set "RHEL_OPS_NO_AUTH=1"
 set "RHEL_OPS_DATA_DIR=%TEMP%\rhel-ops-agent-demo"
 set "PYTHONIOENCODING=utf-8"
 
+if exist ".env.windows" (
+  for /f "usebackq eol=# tokens=1,* delims==" %%A in (".env.windows") do (
+    echo %%A | findstr /b /i "RHEL_OPS_LLM_" >nul
+    if not errorlevel 1 set "%%A=%%B"
+  )
+)
+
 if defined RHEL_AGENT_PORT (
   set "DEMO_PORT=%RHEL_AGENT_PORT%"
 ) else (
@@ -16,6 +23,11 @@ if not defined DEMO_PORT set "DEMO_PORT=18877"
 
 echo Starting RHEL Ops Agent demo on http://127.0.0.1:%DEMO_PORT%
 echo This demo never executes real system commands.
+if "%RHEL_OPS_LLM_ENABLED%"=="1" (
+  echo LLM: Qwen API enabled for intent understanding.
+) else (
+  echo LLM: disabled, using local rules only.
+)
 echo Press Ctrl+C to stop.
 if not defined RHEL_AGENT_NO_BROWSER start "" "http://127.0.0.1:%DEMO_PORT%"
 

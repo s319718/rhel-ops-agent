@@ -166,6 +166,7 @@ LLM 是可选语义理解层，默认关闭。即使启用，危险请求仍由�
 
 ```bash
 cd rhel-ops-agent
+sudo bash install.sh
 sudo bash scripts/setup-qwen-api.sh
 sudo rhel-agent llm-test
 ```
@@ -654,6 +655,16 @@ start-windows.bat
 
 停止演示时，在命令行窗口按 `Ctrl+C`。
 
+如需在 Windows 上测试真实 Qwen API：
+
+```text
+双击 setup-qwen-windows.bat
+输入 DashScope API Key
+双击 start-windows.bat
+```
+
+API Key 会写入被 Git 忽略的 `.env.windows`。LLM 会真实解析中文或英文请求，但 Windows 演示仍不会执行真实 Linux 命令。
+
 如果没有 Python，也可以直接在 GitHub/文件管理器中打开 `README.md` 查看界面截图。
 
 ## 另一个终端的高危命令测试
@@ -1094,6 +1105,23 @@ python3 app.py web --demo
 演示模式不会执行真实系统命令。
 
 ## 故障排查
+
+### `rhel-agent: command not found`
+
+说明当前只下载了源码，还没有执行安装。请在仓库根目录运行：
+
+```bash
+sudo bash install.sh
+```
+
+不要先 `cd rhel-ops-agent` 再重复进入同名目录。安装完成后：
+
+```bash
+sudo rhel-agent rules
+sudo rhel-agent llm-test
+```
+
+如果之前已经运行过 `setup-qwen-api.sh`，`/etc/rhel-ops-agent/agent.env` 会保留，不需要再次输入 API Key。
 
 ### Web 打不开
 

@@ -37,6 +37,7 @@ http://127.0.0.1:11434
 
 ```bash
 cd rhel-ops-agent
+sudo bash install.sh
 sudo bash scripts/setup-qwen-api.sh
 sudo rhel-agent llm-test
 ```
@@ -52,6 +53,18 @@ RHEL_OPS_LLM_MODEL=qwen-plus
 ```
 
 API Key 不写入代码、不返回 Web、不进入日志，文件权限为 `0600`。
+
+## Windows 本地测试
+
+Windows 可以真实调用 Qwen API，同时保持 Linux 命令为演示模式：
+
+```text
+1. 双击 setup-qwen-windows.bat
+2. 输入 DashScope API Key
+3. 双击 start-windows.bat
+```
+
+API Key 保存在 `.env.windows`，该文件已被 `.gitignore` 排除。Windows 演示只模拟命令结果，不执行真实的 RHEL 操作。
 
 ## 方式二：RHEL 本机 Ollama
 

@@ -9,6 +9,10 @@ if [[ "${EUID}" -ne 0 ]]; then
   echo "请使用 root 运行：sudo bash scripts/setup-qwen-api.sh" >&2
   exit 1
 fi
+if [[ ! -x /usr/local/bin/rhel-agent ]]; then
+  echo "RHEL Ops Agent 尚未安装。请先在项目目录执行：sudo bash install.sh" >&2
+  exit 3
+fi
 
 API_KEY="${RHEL_OPS_LLM_API_KEY:-${DASHSCOPE_API_KEY:-}}"
 if [[ -z "${API_KEY}" ]]; then

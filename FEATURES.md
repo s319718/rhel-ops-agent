@@ -166,11 +166,11 @@ change system language to Chinese
 
 当前支持本地规则回复，不依赖外部模型：
 
-- 问候：`你好`、`hello`、`hi`
-- 闲聊：`吃了吗`、`have you eaten`
+- 问候：`你好`、`nihao`、`ni hao`、`hello`、`hi`
+- 闲聊：`吃了吗`、`chi le ma`、`have you eaten`
 - 身份介绍：`你是谁`、`who are you`
-- 能力介绍：`你能做什么`、`what can you do?`
-- 感谢：`谢谢`、`thanks`
+- 能力介绍：`你能做什么`、`neng zuo shenme`、`what can you do?`
+- 感谢：`谢谢`、`xiexie`、`thanks`
 
 小聊只返回解释和推荐操作，不会生成或执行命令。
 
@@ -183,6 +183,7 @@ LLM 是可选层，默认关闭。推荐使用支持 Function Calling 和结构�
 最简单的 Qwen API 接入：
 
 ```bash
+sudo bash install.sh
 sudo bash scripts/setup-qwen-api.sh
 sudo rhel-agent llm-test
 ```
@@ -459,6 +460,7 @@ Windows 可用于：
 - 浏览器查看完整 Web 界面
 - 演示数据
 - 中英文规则演练
+- 通过 `.env.windows` 调用真实 Qwen API
 - 攻击矩阵
 - 模拟审计事件
 

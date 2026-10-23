@@ -129,6 +129,15 @@ def _print_plan(plan: dict[str, Any]) -> None:
         return
     if plan["status"] == "unsupported":
         print(plan["message"])
+        suggestions = plan.get("suggestions", [])
+        if suggestions:
+            print(
+                _text(
+                    language,
+                    "可以试试：%s" % "、".join(suggestions),
+                    "Try: %s" % " | ".join(suggestions),
+                )
+            )
         return
     if plan["status"] == "chat":
         print(plan["message"])
