@@ -72,6 +72,17 @@ def main() -> int:
         rules["audit_patterns"],
         "audit patterns",
     )
+    if rules["count"] < 100:
+        raise AssertionError("expected at least 100 controlled operations")
+
+    status, _, llm_status = client.request("/api/llm/status")
+    assert_equal(status, 200, "LLM status")
+    print(
+        "llm:",
+        "enabled" if llm_status["enabled"] else "disabled",
+        llm_status["provider"],
+        llm_status["model"],
+    )
 
     status, _, planned = client.request(
         "/api/plan", "POST", {"message": "把系统语言改成中文"}

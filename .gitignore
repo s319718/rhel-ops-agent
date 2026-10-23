@@ -1,8 +1,12 @@
 __pycache__/
 *.py[cod]
 .pytest_cache/
+.idea/
 .ui-test-profile/
 data/
 data-demo/
 dist/
 *.log
+*.sqlite
+*.sqlite3
+.DS_Store

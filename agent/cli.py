@@ -26,6 +26,7 @@ KNOWN_COMMANDS = {
     "audit",
     "attack-demo",
     "init",
+    "llm-test",
     "rules",
     "scan",
     "shell",
@@ -419,6 +420,39 @@ def attack_demo(runtime: CliRuntime, inject: bool, json_output: bool) -> int:
     return 0 if report["failed"] == 0 else 1
 
 
+def llm_test_command(runtime: CliRuntime) -> int:
+    status = runtime.planner.public_status()
+    if not runtime.planner.active or runtime.planner.interpreter is None:
+        print("LLM 未启用或配置无效。")
+        if status.get("initialization_error"):
+            print("原因：%s" % status["initialization_error"])
+        print("Qwen API：sudo bash scripts/setup-qwen-api.sh")
+        print("本机 Ollama：sudo bash scripts/setup-ollama.sh")
+        return 2
+    local_plan = runtime.engine.plan("show kernel version")
+    try:
+        result = runtime.planner.interpreter.interpret(
+            "show kernel version", local_plan
+        )
+    except Exception as exc:
+        print("LLM 测试失败：%s" % exc, file=sys.stderr)
+        return 1
+    print(
+        "LLM 测试成功：provider=%s model=%s source=%s confidence=%.2f"
+        % (
+            status["provider"],
+            status["model"],
+            result.source,
+            result.confidence,
+        )
+    )
+    print(
+        "返回动作：%s"
+        % (", ".join(item["action_id"] for item in result.operations) or "(empty)")
+    )
+    return 0
+
+
 def interactive_shell(runtime: CliRuntime) -> int:
     print("RHEL Ops Agent shell (type /help for help, /exit to quit)")
     while True:
@@ -524,6 +558,8 @@ def main(argv: Optional[list[str]] = None) -> int:
         return rules_command(runtime)
     if command == "attack-demo":
         return attack_demo(runtime, args.inject, args.json)
+    if command == "llm-test":
+        return llm_test_command(runtime)
     if command == "status":
         app = AgentApplication(settings)
         data = app.overview("127.0.0.1")

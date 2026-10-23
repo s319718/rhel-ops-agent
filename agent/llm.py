@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from typing import Any, Callable, Optional
 
 from .config import Settings
-from .engine import RuleEngine, detect_language
+from .engine import RuleEngine
 
 
 TOOL_NAME = "submit_operations"
@@ -346,7 +346,9 @@ class LLMClient:
                     "type": "json_schema",
                     "json_schema": {
                         "name": "rhel_operations",
-                        "strict": True,
+                        # Dynamic per-action parameter keys prevent a fully
+                        # strict schema; the server still validates every key.
+                        "strict": False,
                         "schema": schema,
                     },
                 }

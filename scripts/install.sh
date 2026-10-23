@@ -50,14 +50,23 @@ cp -a "${SOURCE_DIR}/web" "${INSTALL_DIR}/web"
 install -m 0755 "${SOURCE_DIR}/app.py" "${INSTALL_DIR}/app.py"
 install -m 0755 "${SOURCE_DIR}/rhel-agent" "${INSTALL_DIR}/rhel-agent"
 install -m 0644 "${SOURCE_DIR}/README.md" "${INSTALL_DIR}/README.md"
+install -m 0644 "${SOURCE_DIR}/FEATURES.md" "${INSTALL_DIR}/FEATURES.md"
+install -m 0644 "${SOURCE_DIR}/LLM.md" "${INSTALL_DIR}/LLM.md"
 install -d -m 0755 "${INSTALL_DIR}/scripts"
 install -m 0755 "${SOURCE_DIR}/scripts/live-audit-test.sh" "${INSTALL_DIR}/scripts/live-audit-test.sh"
 install -m 0755 "${SOURCE_DIR}/scripts/install-audit-rules.sh" "${INSTALL_DIR}/scripts/install-audit-rules.sh"
+install -m 0755 "${SOURCE_DIR}/scripts/setup-ollama.sh" "${INSTALL_DIR}/scripts/setup-ollama.sh"
+install -m 0755 "${SOURCE_DIR}/scripts/setup-qwen-api.sh" "${INSTALL_DIR}/scripts/setup-qwen-api.sh"
 install -m 0644 "${SOURCE_DIR}/scripts/api_smoke_test.py" "${INSTALL_DIR}/scripts/api_smoke_test.py"
 
 WRAPPER_TMP="$(mktemp)"
 cat > "${WRAPPER_TMP}" <<EOF
 #!/usr/bin/env bash
+if [[ -r "${CONFIG_DIR}/agent.env" ]]; then
+  set -a
+  . "${CONFIG_DIR}/agent.env"
+  set +a
+fi
 exec "${PYTHON_BIN}" "${INSTALL_DIR}/rhel-agent" "\$@"
 EOF
 install -m 0755 "${WRAPPER_TMP}" /usr/local/bin/rhel-agent

@@ -71,14 +71,15 @@ class Settings:
             _env_bool("RHEL_OPS_NO_AUTH") if no_auth is None else no_auth
         )
         llm_provider = os.environ.get("RHEL_OPS_LLM_PROVIDER", "ollama").strip().lower()
-        default_llm_url = (
-            "http://127.0.0.1:11434"
-            if llm_provider == "ollama"
-            else "https://api.openai.com/v1"
-        )
-        default_llm_model = (
-            "qwen2.5:7b-instruct" if llm_provider == "ollama" else ""
-        )
+        if llm_provider == "ollama":
+            default_llm_url = "http://127.0.0.1:11434"
+            default_llm_model = "qwen2.5:7b-instruct"
+        elif llm_provider == "qwen":
+            default_llm_url = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+            default_llm_model = "qwen-plus"
+        else:
+            default_llm_url = "https://api.openai.com/v1"
+            default_llm_model = ""
         settings = cls(
             root_dir=root,
             data_dir=Path(configured_data).resolve(),
@@ -97,7 +98,10 @@ class Settings:
             llm_provider=llm_provider,
             llm_base_url=os.environ.get("RHEL_OPS_LLM_BASE_URL", default_llm_url).strip(),
             llm_model=os.environ.get("RHEL_OPS_LLM_MODEL", default_llm_model).strip(),
-            llm_api_key=os.environ.get("RHEL_OPS_LLM_API_KEY", "").strip(),
+            llm_api_key=(
+                os.environ.get("RHEL_OPS_LLM_API_KEY", "").strip()
+                or os.environ.get("DASHSCOPE_API_KEY", "").strip()
+            ),
             llm_timeout_seconds=int(os.environ.get("RHEL_OPS_LLM_TIMEOUT", "20")),
             llm_confidence_threshold=_env_float(
                 "RHEL_OPS_LLM_CONFIDENCE", 0.55

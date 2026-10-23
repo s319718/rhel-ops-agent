@@ -178,6 +178,15 @@ change system language to Chinese
 
 LLM 是可选层，默认关闭。推荐使用支持 Function Calling 和结构化输出的 Qwen2.5-Instruct。
 
+模型安装、Function Calling 协议和故障排查见 [LLM.md](LLM.md)。
+
+最简单的 Qwen API 接入：
+
+```bash
+sudo bash scripts/setup-qwen-api.sh
+sudo rhel-agent llm-test
+```
+
 ### 支持模式
 
 - `off`：不启用 LLM。

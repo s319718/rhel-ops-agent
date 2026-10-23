@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import json
+import os
+import tempfile
 import unittest
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
+from agent.config import Settings
 from agent.engine import RuleEngine
 from agent.llm import (
     HybridPlanner,
@@ -171,6 +175,29 @@ class LLMClientTests(unittest.TestCase):
                 llm_config(base_url="http://llm.example.invalid/v1"),
             )
 
+    def test_qwen_api_defaults_and_dashscope_key(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            with patch.dict(
+                os.environ,
+                {
+                    "RHEL_OPS_LLM_ENABLED": "1",
+                    "RHEL_OPS_LLM_PROVIDER": "qwen",
+                    "DASHSCOPE_API_KEY": "dashscope-test-key",
+                },
+                clear=True,
+            ):
+                settings = Settings.from_env(
+                    root_dir=ROOT,
+                    data_dir=Path(temp),
+                )
+        self.assertEqual(settings.llm_provider, "qwen")
+        self.assertEqual(
+            settings.llm_base_url,
+            "https://dashscope.aliyuncs.com/compatible-mode/v1",
+        )
+        self.assertEqual(settings.llm_model, "qwen-plus")
+        self.assertEqual(settings.llm_api_key, "dashscope-test-key")
+
 
 class HybridPlannerTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -202,6 +229,34 @@ class HybridPlannerTests(unittest.TestCase):
         self.assertEqual(plan["steps"][0]["action_id"], "set_locale_zh")
         self.assertEqual(plan["confirmation_phrase"], "Confirm locale change")
         self.assertTrue(plan["requires_restart"])
+
+    def test_llm_parameters_are_revalidated_by_rule_engine(self) -> None:
+        class FakeInterpreter:
+            def interpret(self, message, local_plan):
+                return Interpretation(
+                    operations=[
+                        {
+                            "action_id": "open_firewall_port",
+                            "parameters": {"port": "8080", "protocol": "tcp"},
+                        }
+                    ],
+                    confidence=0.96,
+                    language="en",
+                    rationale="Open one validated firewall port.",
+                    source="tool_call",
+                    model="qwen2.5-7b-instruct",
+                )
+
+        planner = HybridPlanner(
+            self.engine,
+            self.config,
+            interpreter=FakeInterpreter(),
+        )
+        plan = planner.plan("let traffic through 8080")
+        self.assertEqual(plan["status"], "ready")
+        self.assertEqual(plan["steps"][0]["action_id"], "open_firewall_port")
+        self.assertEqual(plan["steps"][0]["params"]["port"], "8080")
+        self.assertEqual(plan["confirmation_phrase"], "Confirm opening firewall port")
 
     def test_blocked_request_never_calls_llm(self) -> None:
         class FailingInterpreter:
