@@ -1,0 +1,243 @@
+{
+  "version": 1,
+  "patterns": [
+    {
+      "id": "delete_root",
+      "title_zh": "递归删除根目录",
+      "severity": "critical",
+      "patterns": [
+        "\\brm\\s+-[A-Za-z]*r[A-Za-z]*f?[A-Za-z]*\\s+/(?:\\s|$|\\*)",
+        "\\brm\\s+-[A-Za-z]*f[A-Za-z]*r[A-Za-z]*\\s+/(?:\\s|$|\\*)"
+      ]
+    },
+    {
+      "id": "recursive_force_delete",
+      "title_zh": "递归强制删除文件",
+      "severity": "high",
+      "patterns": [
+        "\\brm\\s+-[A-Za-z]*r[A-Za-z]*f[A-Za-z]*\\b",
+        "\\brm\\s+-[A-Za-z]*f[A-Za-z]*r[A-Za-z]*\\b"
+      ]
+    },
+    {
+      "id": "format_filesystem",
+      "title_zh": "格式化文件系统",
+      "severity": "critical",
+      "patterns": ["\\bmkfs(?:\\.[A-Za-z0-9]+)?\\s+"]
+    },
+    {
+      "id": "overwrite_block_device",
+      "title_zh": "覆写磁盘块设备",
+      "severity": "critical",
+      "patterns": ["\\bdd\\b.*\\bof=/dev/(?:sd|nvme|vd|hd|mapper|dm-)"]
+    },
+    {
+      "id": "wipefs",
+      "title_zh": "擦除文件系统签名",
+      "severity": "critical",
+      "patterns": ["\\bwipefs\\s+-[A-Za-z]*a"]
+    },
+    {
+      "id": "reboot_host",
+      "title_zh": "重启主机",
+      "severity": "high",
+      "patterns": ["\\b(reboot|shutdown\\s+-r)\\b", "\\bsystemctl\\s+reboot\\b"]
+    },
+    {
+      "id": "shutdown_host",
+      "title_zh": "关闭主机",
+      "severity": "high",
+      "patterns": ["\\b(poweroff|halt)\\b", "\\bshutdown\\s+-h\\b", "\\bsystemctl\\s+poweroff\\b"]
+    },
+    {
+      "id": "disable_selinux",
+      "title_zh": "关闭 SELinux",
+      "severity": "high",
+      "patterns": ["\\bsetenforce\\s+0\\b", "\\bSELINUX\\s*=\\s*disabled\\b"]
+    },
+    {
+      "id": "flush_firewall",
+      "title_zh": "清空防火墙规则",
+      "severity": "high",
+      "patterns": ["\\biptables\\s+-F\\b", "\\bnft\\s+flush\\s+ruleset\\b"]
+    },
+    {
+      "id": "firewall_panic",
+      "title_zh": "隔离或破坏防火墙",
+      "severity": "high",
+      "patterns": ["\\bfirewall-cmd\\s+--panic-(?:on|off)\\b"]
+    },
+    {
+      "id": "stop_firewalld",
+      "title_zh": "停止主机防火墙",
+      "severity": "high",
+      "patterns": [
+        "\\bsystemctl\\s+(?:stop|disable)\\s+firewalld\\b",
+        "\\bservice\\s+firewalld\\s+stop\\b"
+      ]
+    },
+    {
+      "id": "stop_sshd",
+      "title_zh": "停止 SSH 服务",
+      "severity": "critical",
+      "patterns": [
+        "\\bsystemctl\\s+(?:stop|disable|mask)\\s+sshd\\b",
+        "\\bservice\\s+sshd\\s+stop\\b",
+        "\\bkillall\\s+sshd\\b"
+      ]
+    },
+    {
+      "id": "network_disconnect",
+      "title_zh": "主动断开网络连接",
+      "severity": "high",
+      "patterns": [
+        "\\bnmcli\\s+(?:connection\\s+)?down\\b",
+        "\\bnmcli\\s+device\\s+disconnect\\b",
+        "\\bip\\s+link\\s+set\\s+\\S+\\s+down\\b",
+        "\\bifdown\\s+"
+      ]
+    },
+    {
+      "id": "flush_ip_address",
+      "title_zh": "清空网络地址",
+      "severity": "high",
+      "patterns": ["\\bip\\s+(?:addr|address)\\s+flush\\b"]
+    },
+    {
+      "id": "dangerous_chmod",
+      "title_zh": "开放过宽文件权限",
+      "severity": "high",
+      "patterns": [
+        "\\bchmod\\s+(?:-[A-Za-z]+\\s+)?(?:777|666)\\s+/",
+        "\\bchmod\\s+-R\\s+777\\b"
+      ]
+    },
+    {
+      "id": "dangerous_chown",
+      "title_zh": "递归迁移系统文件所有权",
+      "severity": "high",
+      "patterns": ["\\bchown\\s+-R\\s+\\S+\\s+/(?:\\s|$)"]
+    },
+    {
+      "id": "remove_all_cron",
+      "title_zh": "清空计划任务",
+      "severity": "high",
+      "patterns": ["\\bcrontab\\s+-r\\b"]
+    },
+    {
+      "id": "stop_auditd",
+      "title_zh": "停止系统审计服务",
+      "severity": "critical",
+      "patterns": [
+        "\\bsystemctl\\s+(?:stop|disable|mask)\\s+auditd\\b",
+        "\\bservice\\s+auditd\\s+stop\\b"
+      ]
+    },
+    {
+      "id": "delete_audit_rules",
+      "title_zh": "删除审计规则",
+      "severity": "critical",
+      "patterns": ["\\bauditctl\\s+-D\\b", "\\brm\\s+.*?/etc/audit/rules\\.d/"]
+    },
+    {
+      "id": "delete_user",
+      "title_zh": "删除系统用户",
+      "severity": "high",
+      "patterns": ["\\buserdel\\s+"]
+    },
+    {
+      "id": "edit_sudoers",
+      "title_zh": "修改 sudo 提权配置",
+      "severity": "medium",
+      "patterns": [
+        "\\bvisudo\\b",
+        "(?:>>|tee\\s+)\\s*/etc/sudoers",
+        "\\bsed\\s+-i\\b.*?/etc/sudoers"
+      ]
+    },
+    {
+      "id": "clear_shell_history",
+      "title_zh": "清除命令历史",
+      "severity": "high",
+      "patterns": [
+        "\\bhistory\\s+-c\\b",
+        "\\bunset\\s+HISTFILE\\b",
+        "\\brm\\s+[^\\n]*\\.bash_history\\b"
+      ]
+    },
+    {
+      "id": "remote_pipe_shell",
+      "title_zh": "从网络直接执行脚本",
+      "severity": "critical",
+      "patterns": [
+        "\\b(?:curl|wget)\\b[^\\n|]*\\|\\s*(?:ba|z|k)?sh\\b",
+        "\\b(?:curl|wget)\\b[^\\n|]*\\|\\s*python[0-9.]*\\b"
+      ]
+    },
+    {
+      "id": "reverse_shell",
+      "title_zh": "疑似反弹 Shell",
+      "severity": "critical",
+      "patterns": [
+        "/dev/tcp/",
+        "\\bnc\\s+(?:-[A-Za-z]+\\s+)*-[A-Za-z]*e\\s+",
+        "\\bsocat\\b.*\\bexec:"
+      ]
+    },
+    {
+      "id": "inject_authorized_key",
+      "title_zh": "写入 SSH 授权密钥",
+      "severity": "high",
+      "patterns": [
+        "(?:>>|tee\\s+(?:-a\\s+)?)[^\\n]*authorized_keys"
+      ]
+    },
+    {
+      "id": "delete_logs",
+      "title_zh": "删除安全日志",
+      "severity": "high",
+      "patterns": [
+        "\\brm\\s+[^\\n]*/var/log/(?:secure|messages|audit|journal)",
+        "\\btruncate\\s+-s\\s*0\\s+/var/log/"
+      ]
+    },
+    {
+      "id": "privileged_container",
+      "title_zh": "启动特权容器",
+      "severity": "high",
+      "patterns": ["\\b(?:docker|podman)\\s+run\\b[^\\n]*--privileged\\b"]
+    },
+    {
+      "id": "mass_process_kill",
+      "title_zh": "批量结束进程",
+      "severity": "high",
+      "patterns": [
+        "\\b(?:pkill|killall)\\s+(?:-[A-Za-z]+\\s+)*-[A-Za-z]*9",
+        "\\bkill\\s+-9\\s+-1\\b"
+      ]
+    },
+    {
+      "id": "remove_core_package",
+      "title_zh": "卸载核心系统软件包",
+      "severity": "critical",
+      "patterns": [
+        "\\b(?:dnf|yum)\\s+(?:remove|erase)\\b[^\\n]*(?:kernel|glibc|systemd|openssl|sshd|selinux)"
+      ]
+    },
+    {
+      "id": "unload_kernel_module",
+      "title_zh": "卸载内核模块",
+      "severity": "high",
+      "patterns": ["\\b(?:rmmod|modprobe\\s+-r)\\s+"]
+    },
+    {
+      "id": "weaken_kernel_protection",
+      "title_zh": "削弱内核安全参数",
+      "severity": "high",
+      "patterns": [
+        "\\bsysctl\\s+-w\\s+(?:kernel\\.kptr_restrict|kernel\\.randomize_va_space)=0\\b",
+        "\\bsysctl\\s+-w\\s+net\\.ipv4\\.conf\\.all\\.rp_filter=0\\b"
+      ]
+    }
+  ]
+}

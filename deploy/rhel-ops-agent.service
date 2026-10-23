@@ -1,0 +1,23 @@
+[Unit]
+Description=RHEL Ops Agent
+Documentation=file:///opt/rhel-ops-agent/README.md
+After=network-online.target auditd.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/opt/rhel-ops-agent
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=-/etc/rhel-ops-agent/agent.env
+ExecStart=/usr/bin/python3 /opt/rhel-ops-agent/app.py web
+Restart=on-failure
+RestartSec=3
+TimeoutStopSec=10
+UMask=0077
+PrivateTmp=true
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target

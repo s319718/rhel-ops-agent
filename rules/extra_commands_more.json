@@ -1,0 +1,503 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "id": "show_repositories",
+      "title_zh": "查看软件仓库",
+      "title_en": "Show enabled repositories",
+      "category": "patch",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示|检查).*(仓库|repo|软件源).*(状态|列表|启用)?",
+        "\\b(show|list|display|check).*(repos?|repositories|software sources?)\\b"
+      ],
+      "commands": [["dnf", "repolist", "--enabled"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "列出当前启用的 DNF 软件仓库。",
+      "impact_zh": "只读操作，不会刷新或修改仓库配置。",
+      "summary_en": "Lists currently enabled DNF repositories.",
+      "impact_en": "Read-only and does not refresh or modify repository configuration."
+    },
+    {
+      "id": "show_enabled_services",
+      "title_zh": "查看开机自启服务",
+      "title_en": "Show enabled services",
+      "category": "services",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(开机自启|已启用).*(服务|service)",
+        "\\b(show|list|display).*(enabled).*(services?|units?)\\b"
+      ],
+      "commands": [
+        ["systemctl", "list-unit-files", "--type=service", "--state=enabled", "--no-pager"]
+      ],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "列出设置为开机自动启动的 systemd 服务。",
+      "impact_zh": "只读操作，不会修改服务启动状态。",
+      "summary_en": "Lists systemd services configured to start at boot.",
+      "impact_en": "Read-only and does not change service enablement."
+    },
+    {
+      "id": "show_running_services",
+      "title_zh": "查看运行中的服务",
+      "title_en": "Show running services",
+      "category": "services",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(正在运行|已运行|当前运行).*(服务|service)",
+        "\\b(show|list|display).*(running).*(services?|units?)\\b"
+      ],
+      "commands": [
+        ["systemctl", "list-units", "--type=service", "--state=running", "--no-pager"]
+      ],
+      "summary_zh": "列出当前处于运行状态的 systemd 服务。",
+      "impact_zh": "只读操作，不会重启或停止服务。",
+      "summary_en": "Lists currently running systemd services.",
+      "impact_en": "Read-only and does not restart or stop services."
+    },
+    {
+      "id": "show_top_memory_processes",
+      "title_zh": "查看内存占用进程",
+      "title_en": "Show top memory processes",
+      "category": "process",
+      "risk": "safe",
+      "group": "process_read",
+      "priority": 2,
+      "patterns": [
+        "(查看|列出|显示|检查).*(内存|memory).*(占用|使用).*(高|最多|进程)",
+        "\\b(show|list|display|check).*(top memory|memory usage).*(processes?)?\\b"
+      ],
+      "commands": [
+        ["ps", "-eo", "pid,user,comm,%mem,%cpu", "--sort=-%mem"]
+      ],
+      "summary_zh": "按内存占用从高到低列出进程。",
+      "impact_zh": "只读操作，不会结束进程。",
+      "summary_en": "Lists processes ordered by memory usage.",
+      "impact_en": "Read-only and does not terminate processes."
+    },
+    {
+      "id": "show_failed_logins",
+      "title_zh": "查看失败登录",
+      "title_en": "Show failed login attempts",
+      "category": "account",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示|检查).*(失败登录|登录失败|爆破|bad password)",
+        "\\b(show|list|display|check).*(failed logins?|bad password attempts?|login failures?)\\b"
+      ],
+      "commands": [["lastb", "-n", "20"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "显示最近 20 条失败登录记录。",
+      "impact_zh": "只读操作，不会锁定账户或修改认证配置。",
+      "summary_en": "Shows the 20 most recent failed login records.",
+      "impact_en": "Read-only and does not lock accounts or change authentication."
+    },
+    {
+      "id": "show_timezone_detail",
+      "title_zh": "查看当前时区",
+      "title_en": "Show current timezone",
+      "category": "time",
+      "risk": "safe",
+      "group": "time_read",
+      "priority": 2,
+      "patterns": [
+        "(查看|检查|显示).*(当前|系统).*(时区|timezone)",
+        "\\b(show|check|display).*(current|system)?.*(timezone|time zone)\\b"
+      ],
+      "commands": [["timedatectl", "show", "--property=Timezone", "--value"]],
+      "summary_zh": "只显示当前系统时区名称。",
+      "impact_zh": "只读操作，不会修改时间。",
+      "summary_en": "Shows only the current system timezone.",
+      "impact_en": "Read-only and does not change time settings."
+    },
+    {
+      "id": "show_uptime_detail",
+      "title_zh": "查看运行时长",
+      "title_en": "Show system uptime",
+      "category": "system",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(运行时长|开机多久|连续运行)",
+        "\\b(show|check|display).*(uptime|how long.*running)\\b"
+      ],
+      "commands": [["uptime", "-p"]],
+      "summary_zh": "以易读格式显示系统连续运行时间。",
+      "impact_zh": "只读操作，不会重启系统。",
+      "summary_en": "Shows how long the system has been running in a readable format.",
+      "impact_en": "Read-only and does not reboot the system."
+    },
+    {
+      "id": "show_network_devices",
+      "title_zh": "查看网络设备详情",
+      "title_en": "Show network device details",
+      "category": "network",
+      "risk": "safe",
+      "group": "network_read",
+      "priority": 3,
+      "patterns": [
+        "(查看|检查|显示).*(网卡|网络设备).*(详情|列表|状态)",
+        "\\b(show|check|display|list).*(network devices?|nic details?|interfaces?)\\b"
+      ],
+      "commands": [["nmcli", "device", "show"]],
+      "summary_zh": "显示 NetworkManager 网卡状态、地址和连接详情。",
+      "impact_zh": "只读操作，不会重载网络连接。",
+      "summary_en": "Shows NetworkManager device state, addresses, and connection details.",
+      "impact_en": "Read-only and does not reload network connections."
+    },
+    {
+      "id": "show_ipv6_addresses",
+      "title_zh": "查看 IPv6 地址",
+      "title_en": "Show IPv6 addresses",
+      "category": "network",
+      "risk": "safe",
+      "group": "network_read",
+      "priority": 4,
+      "patterns": [
+        "(查看|检查|显示).*(IPv6|ipv6).*(地址|配置)",
+        "\\b(show|check|display).*(ipv6).*(address|addresses|config)\\b"
+      ],
+      "commands": [["ip", "-6", "-brief", "address"]],
+      "summary_zh": "列出接口上的 IPv6 地址和状态。",
+      "impact_zh": "只读操作，不会修改网络。",
+      "summary_en": "Lists IPv6 addresses and interface states.",
+      "impact_en": "Read-only and does not modify networking."
+    },
+    {
+      "id": "show_firewall_ports",
+      "title_zh": "查看防火墙开放端口",
+      "title_en": "Show allowed firewall ports",
+      "category": "firewall",
+      "risk": "safe",
+      "group": "firewall_read",
+      "priority": 3,
+      "patterns": [
+        "(查看|列出|显示).*(防火墙).*(端口|port)",
+        "\\b(show|list|display).*(firewall).*(ports?|allowed ports?)\\b"
+      ],
+      "commands": [["firewall-cmd", "--list-ports"]],
+      "summary_zh": "列出默认防火墙区域已开放的端口。",
+      "impact_zh": "只读操作，不会修改防火墙规则。",
+      "summary_en": "Lists ports explicitly allowed in the default firewall zone.",
+      "impact_en": "Read-only and does not modify firewall rules."
+    },
+    {
+      "id": "show_chrony_sources",
+      "title_zh": "查看时间同步源",
+      "title_en": "Show time synchronization sources",
+      "category": "time",
+      "risk": "safe",
+      "group": "time_read",
+      "priority": 3,
+      "patterns": [
+        "(查看|检查|显示).*(NTP|ntp|时间同步|校时).*(源|服务器|状态)",
+        "\\b(show|check|display).*(ntp|chrony|time sync).*(sources?|servers?|status)\\b"
+      ],
+      "commands": [["chronyc", "sources", "-v"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "显示 chrony 当前使用的时间源和同步状态。",
+      "impact_zh": "只读操作，不会修改时间源。",
+      "summary_en": "Shows the time sources and synchronization state used by chrony.",
+      "impact_en": "Read-only and does not change time sources."
+    },
+    {
+      "id": "show_password_status",
+      "title_zh": "查看账户密码状态",
+      "title_en": "Show account password status",
+      "category": "account",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(用户|账户).*(密码).*(状态|是否锁定|过期)",
+        "\\b(show|check|display).*(user|account).*(password status|password state)\\b",
+        "\\b(show|check|display)\\s+(?:user\\s+)?(password status|password state)\\b"
+      ],
+      "params": {
+        "username": {
+          "label_zh": "用户名",
+          "label_en": "Username",
+          "placeholder": "deploy",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "username",
+          "required": true
+        }
+      },
+      "commands": [["passwd", "-S", "{{username}}"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "显示账户密码是否设置、锁定和最近修改信息。",
+      "impact_zh": "只读操作，不会修改密码。",
+      "summary_en": "Shows whether an account password is set, locked, and recently changed.",
+      "impact_en": "Read-only and does not change the password."
+    },
+    {
+      "id": "show_group_members",
+      "title_zh": "查看组成员",
+      "title_en": "Show group members",
+      "category": "account",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(组|group).*(成员|用户)",
+        "\\b(show|list|display).*(group).*(members?|users?)\\b"
+      ],
+      "params": {
+        "groupname": {
+          "label_zh": "用户组名",
+          "label_en": "Group name",
+          "placeholder": "wheel",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "groupname",
+          "required": true
+        }
+      },
+      "commands": [["getent", "group", "{{groupname}}"]],
+      "accepted_exit_codes": [0, 2],
+      "summary_zh": "显示指定用户组的 GID 和成员列表。",
+      "impact_zh": "只读操作，不会修改组成员。",
+      "summary_en": "Shows the GID and member list for a local group.",
+      "impact_en": "Read-only and does not modify group membership."
+    },
+    {
+      "id": "show_service_journal",
+      "title_zh": "查看服务日志",
+      "title_en": "Show service journal",
+      "category": "logs",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(服务|service).*(日志|journal)",
+        "\\b(show|check|display).*(service|unit).*(logs?|journal)\\b"
+      ],
+      "params": {
+        "service": {
+          "label_zh": "服务名",
+          "label_en": "Service name",
+          "placeholder": "sshd",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "service",
+          "required": true
+        }
+      },
+      "commands": [["journalctl", "-u", "{{service}}", "-n", "50", "--no-pager"]],
+      "summary_zh": "读取指定服务最近 50 条 journal 日志。",
+      "impact_zh": "只读操作，不会清理服务日志。",
+      "summary_en": "Reads the latest 50 journal entries for a service.",
+      "impact_en": "Read-only and does not clear service logs."
+    },
+    {
+      "id": "show_mount_options",
+      "title_zh": "查看挂载参数",
+      "title_en": "Show mount options",
+      "category": "storage",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(挂载参数|mount options|noexec|nosuid|nodev)",
+        "\\b(show|check|display).*(mount options?|noexec|nosuid|nodev)\\b"
+      ],
+      "commands": [
+        ["findmnt", "--real", "-o", "TARGET,SOURCE,FSTYPE,OPTIONS"]
+      ],
+      "summary_zh": "显示真实文件系统的挂载点、来源、类型和参数。",
+      "impact_zh": "只读操作，不会重新挂载文件系统。",
+      "summary_en": "Shows targets, sources, types, and options for real filesystems.",
+      "impact_en": "Read-only and does not remount filesystems."
+    },
+    {
+      "id": "show_dns_domains",
+      "title_zh": "查看 DNS 搜索域",
+      "title_en": "Show DNS search domains",
+      "category": "network",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(DNS|dns).*(搜索域|domain|路由域)",
+        "\\b(show|check|display).*(dns).*(domains?|search domains?|routing domains?)\\b"
+      ],
+      "commands": [["resolvectl", "domain"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "显示各接口的 DNS 搜索域和路由域配置。",
+      "impact_zh": "只读操作，不会修改解析配置。",
+      "summary_en": "Shows per-interface DNS search and routing domains.",
+      "impact_en": "Read-only and does not modify resolver configuration."
+    },
+    {
+      "id": "show_ip_rules",
+      "title_zh": "查看 IP 策略路由",
+      "title_en": "Show IP policy rules",
+      "category": "network",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(ip rule|策略路由|路由策略)",
+        "\\b(show|list|display).*(ip rules?|policy routing)\\b"
+      ],
+      "commands": [["ip", "rule", "show"]],
+      "summary_zh": "显示 IPv4 策略路由规则和查找表。",
+      "impact_zh": "只读操作，不会修改路由策略。",
+      "summary_en": "Shows IPv4 policy-routing rules and lookup tables.",
+      "impact_en": "Read-only and does not modify routing policy."
+    },
+    {
+      "id": "show_socket_summary",
+      "title_zh": "查看套接字统计",
+      "title_en": "Show socket summary",
+      "category": "network",
+      "risk": "safe",
+      "group": "connection_read",
+      "priority": 2,
+      "patterns": [
+        "(查看|显示|统计).*(socket|套接字).*(统计|数量|摘要)",
+        "\\b(show|display).*(socket).*(summary|statistics|count)\\b"
+      ],
+      "commands": [["ss", "-s"]],
+      "summary_zh": "汇总 TCP、UDP、UNIX 套接字数量和状态。",
+      "impact_zh": "只读操作，不会关闭连接。",
+      "summary_en": "Summarizes TCP, UDP, and UNIX socket counts and states.",
+      "impact_en": "Read-only and does not close connections."
+    },
+    {
+      "id": "show_rpm_gpg_keys",
+      "title_zh": "查看 RPM 信任密钥",
+      "title_en": "Show RPM GPG keys",
+      "category": "patch",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(RPM|rpm).*(GPG|gpg).*(密钥|key)",
+        "\\b(show|list|display).*(rpm|gpg).*(keys?)\\b"
+      ],
+      "commands": [["rpm", "-qa", "gpg-pubkey*"]],
+      "summary_zh": "列出系统中已导入的 RPM GPG 公钥包。",
+      "impact_zh": "只读操作，不会导入或删除密钥。",
+      "summary_en": "Lists RPM GPG public-key packages imported on the system.",
+      "impact_en": "Read-only and does not import or remove keys."
+    },
+    {
+      "id": "show_subscription_status",
+      "title_zh": "查看 RHEL 订阅状态",
+      "title_en": "Show RHEL subscription status",
+      "category": "patch",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(订阅|subscription).*(状态|是否注册)",
+        "\\b(show|check|display).*(subscription).*(status|registered)\\b"
+      ],
+      "commands": [["subscription-manager", "status"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "显示系统是否注册到红帽订阅管理及仓库可用性。",
+      "impact_zh": "只读操作，不会注册或取消订阅。",
+      "summary_en": "Shows whether the system is registered and entitled to RHEL repositories.",
+      "impact_en": "Read-only and does not register or remove subscriptions."
+    },
+    {
+      "id": "show_audit_status",
+      "title_zh": "查看审计子系统状态",
+      "title_en": "Show audit subsystem status",
+      "category": "audit",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(auditd|审计).*(状态|规则数|是否运行)",
+        "\\b(show|check|display).*(audit|auditd).*(status|state|rules)\\b"
+      ],
+      "commands": [["auditctl", "-s"]],
+      "summary_zh": "显示内核审计是否启用、规则数量和日志状态。",
+      "impact_zh": "只读操作，不会修改审计规则。",
+      "summary_en": "Shows whether kernel auditing is enabled, rule count, and backlog state.",
+      "impact_en": "Read-only and does not modify audit rules."
+    },
+    {
+      "id": "show_selinux_mode",
+      "title_zh": "查看 SELinux 模式",
+      "title_en": "Show SELinux mode",
+      "category": "security",
+      "risk": "safe",
+      "group": "selinux_read",
+      "priority": 2,
+      "patterns": [
+        "(查看|检查|显示).*(SELinux|selinux).*(模式|mode|强制|宽容)",
+        "\\b(show|check|display).*(selinux).*(mode|enforcing|permissive)\\b"
+      ],
+      "commands": [["getenforce"]],
+      "summary_zh": "显示 SELinux 当前运行模式。",
+      "impact_zh": "只读操作，不会修改 SELinux 模式。",
+      "summary_en": "Shows the current SELinux runtime mode.",
+      "impact_en": "Read-only and does not change the SELinux mode."
+    },
+    {
+      "id": "show_firewall_zones",
+      "title_zh": "查看活动防火墙区域",
+      "title_en": "Show active firewall zones",
+      "category": "firewall",
+      "risk": "safe",
+      "group": "firewall_read",
+      "priority": 4,
+      "patterns": [
+        "(查看|列出|显示).*(防火墙).*(活动|活跃).*(区域|zone)",
+        "\\b(show|list|display).*(firewall).*(active zones?|zones?)\\b"
+      ],
+      "commands": [["firewall-cmd", "--get-active-zones"]],
+      "summary_zh": "显示接口和来源绑定的活动防火墙区域。",
+      "impact_zh": "只读操作，不会修改防火墙规则。",
+      "summary_en": "Shows active firewall zones for interfaces and sources.",
+      "impact_en": "Read-only and does not modify firewall rules."
+    },
+    {
+      "id": "show_user_processes",
+      "title_zh": "查看指定用户进程",
+      "title_en": "Show processes for a user",
+      "category": "process",
+      "risk": "safe",
+      "group": "process_read",
+      "priority": 3,
+      "patterns": [
+        "(查看|列出|显示).*(用户|user).*(进程|process)",
+        "\\b(show|list|display).*(processes).*(for|of).*(user)\\b"
+      ],
+      "params": {
+        "username": {
+          "label_zh": "用户名",
+          "label_en": "Username",
+          "placeholder": "deploy",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "username",
+          "required": true
+        }
+      },
+      "commands": [["ps", "-u", "{{username}}", "-o", "pid,user,comm,%cpu,%mem"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "列出指定用户拥有的进程和资源占用。",
+      "impact_zh": "只读操作，不会结束用户进程。",
+      "summary_en": "Lists processes owned by a user and their resource usage.",
+      "impact_en": "Read-only and does not terminate user processes."
+    },
+    {
+      "id": "show_listening_udp",
+      "title_zh": "查看 UDP 监听端口",
+      "title_en": "Show listening UDP ports",
+      "category": "network",
+      "risk": "safe",
+      "group": "connection_read",
+      "priority": 3,
+      "patterns": [
+        "(查看|列出|显示).*(UDP|udp).*(监听|端口)",
+        "\\b(show|list|display).*(udp).*(listening|ports?)\\b"
+      ],
+      "commands": [["ss", "-lunp"]],
+      "summary_zh": "列出 UDP 监听端口和关联进程。",
+      "impact_zh": "只读操作，不会关闭端口。",
+      "summary_en": "Lists listening UDP ports and associated processes.",
+      "impact_en": "Read-only and does not close ports."
+    },
+    {
+      "id": "show_ipv4_addresses",
+      "title_zh": "查看 IPv4 地址",
+      "title_en": "Show IPv4 addresses",
+      "category": "network",
+      "risk": "safe",
+      "group": "network_read",
+      "priority": 5,
+      "patterns": [
+        "(查看|检查|显示).*(IPv4|ipv4).*(地址|配置)",
+        "\\b(show|check|display).*(ipv4).*(address|addresses|config)\\b"
+      ],
+      "commands": [["ip", "-4", "-brief", "address"]],
+      "summary_zh": "列出接口上的 IPv4 地址和状态。",
+      "impact_zh": "只读操作，不会修改网络。",
+      "summary_en": "Lists IPv4 addresses and interface states.",
+      "impact_en": "Read-only and does not modify networking."
+    }
+  ]
+}

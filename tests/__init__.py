@@ -1,0 +1,1 @@
+"""RHEL Ops Agent tests."""

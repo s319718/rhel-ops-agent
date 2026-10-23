@@ -1,0 +1,469 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>RHEL 护航员</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <svg class="svg-sprite" aria-hidden="true">
+    <symbol id="i-shield" viewBox="0 0 24 24">
+      <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+      <path d="m9 12 2 2 4-4"/>
+    </symbol>
+    <symbol id="i-dashboard" viewBox="0 0 24 24">
+      <rect x="3" y="3" width="7" height="9" rx="1"/>
+      <rect x="14" y="3" width="7" height="5" rx="1"/>
+      <rect x="14" y="12" width="7" height="9" rx="1"/>
+      <rect x="3" y="16" width="7" height="5" rx="1"/>
+    </symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24">
+      <polyline points="4 17 10 11 4 5"/>
+      <line x1="12" y1="19" x2="20" y2="19"/>
+    </symbol>
+    <symbol id="i-bug" viewBox="0 0 24 24">
+      <path d="m8 2 1.88 1.88M14.12 3.88 16 2M9 7.13v-1a3.003 3.003 0 1 1 6 0v1"/>
+      <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6ZM12 20v-9"/>
+      <path d="M6.53 9C4.6 8.8 3 7.1 3 5M6 13H2M3 21c0-2.1 1.7-3.9 3.8-4M20.97 5c0 2.1-1.6 3.8-3.5 4M22 13h-4M17.2 17c2.1.1 3.8 1.9 3.8 4"/>
+    </symbol>
+    <symbol id="i-scroll" viewBox="0 0 24 24">
+      <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2h4"/>
+      <path d="M19 17V5a2 2 0 0 0-2-2H4"/>
+      <path d="M15 8h-5M15 12h-5"/>
+    </symbol>
+    <symbol id="i-book" viewBox="0 0 24 24">
+      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+    </symbol>
+    <symbol id="i-send" viewBox="0 0 24 24">
+      <path d="m22 2-7 20-4-9-9-4Z"/>
+      <path d="M22 2 11 13"/>
+    </symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24">
+      <path d="M3 12a9 9 0 0 1 15.3-6.4L21 8"/>
+      <path d="M21 3v5h-5"/>
+      <path d="M21 12a9 9 0 0 1-15.3 6.4L3 16"/>
+      <path d="M3 21v-5h5"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+      <path d="M12 9v4M12 17h.01"/>
+    </symbol>
+    <symbol id="i-server" viewBox="0 0 24 24">
+      <rect x="2" y="3" width="20" height="8" rx="2"/>
+      <rect x="2" y="13" width="20" height="8" rx="2"/>
+      <path d="M6 7h.01M6 17h.01"/>
+    </symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <polyline points="12 7 12 12 15 14"/>
+    </symbol>
+    <symbol id="i-network" viewBox="0 0 24 24">
+      <rect x="9" y="2" width="6" height="6" rx="1"/>
+      <rect x="2" y="16" width="6" height="6" rx="1"/>
+      <rect x="16" y="16" width="6" height="6" rx="1"/>
+      <path d="M12 8v4M5 16v-2h14v2"/>
+    </symbol>
+    <symbol id="i-languages" viewBox="0 0 24 24">
+      <path d="m5 8 6 6M4 14h6M2 5h12M7 2h1"/>
+      <path d="M22 22h-5l-1-3H12l-1 3H8l4-12h4l6 12Z"/>
+      <path d="M14.5 15h4"/>
+    </symbol>
+    <symbol id="i-power" viewBox="0 0 24 24">
+      <path d="M12 2v10"/>
+      <path d="M18.4 6.6a9 9 0 1 1-12.77.04"/>
+    </symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24">
+      <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M19 6l-1 15H6L5 6M10 11v6M14 11v6"/>
+    </symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24">
+      <rect x="4" y="10" width="16" height="11" rx="2"/>
+      <path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/>
+    </symbol>
+    <symbol id="i-log-out" viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24">
+      <path d="M4 6h16M4 12h16M4 18h16"/>
+    </symbol>
+    <symbol id="i-x" viewBox="0 0 24 24">
+      <path d="M18 6 6 18M6 6l12 12"/>
+    </symbol>
+    <symbol id="i-checks" viewBox="0 0 24 24">
+      <path d="m2 12 5 5L17 7"/>
+      <path d="m12 17 2 2 8-8"/>
+    </symbol>
+    <symbol id="i-search" viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="7"/>
+      <path d="m20 20-4-4"/>
+    </symbol>
+    <symbol id="i-info" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 11v5M12 8h.01"/>
+    </symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24">
+      <path d="m9 18 6-6-6-6"/>
+    </symbol>
+  </svg>
+
+  <div id="login-screen" class="login-screen hidden">
+    <form id="login-form" class="login-panel" autocomplete="on">
+      <div class="brand-lockup login-brand">
+        <span class="brand-mark"><svg class="icon"><use href="#i-shield"></use></svg></span>
+        <span><strong>RHEL 护航员</strong><small>Linux 安全操作助手</small></span>
+      </div>
+      <div class="login-copy">
+        <h1>登录管理控制台</h1>
+        <p>使用安装时设置的管理员密码。</p>
+      </div>
+      <label class="field">
+        <span>管理员密码</span>
+        <input id="login-password" type="password" autocomplete="current-password" required autofocus>
+      </label>
+      <p id="login-error" class="form-error" role="alert"></p>
+      <button class="btn btn-primary btn-block" type="submit">
+        <svg class="icon"><use href="#i-lock"></use></svg>
+        登录
+      </button>
+      <p id="demo-hint" class="login-hint hidden">本地演示密码：<code>rhel-demo</code></p>
+    </form>
+  </div>
+
+  <div id="app-shell" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand-lockup">
+        <span class="brand-mark"><svg class="icon"><use href="#i-shield"></use></svg></span>
+        <span><strong>RHEL 护航员</strong><small>安全操作控制台</small></span>
+      </div>
+      <nav class="main-nav" aria-label="主导航">
+        <button class="nav-item active" data-view="overview">
+          <svg class="icon"><use href="#i-dashboard"></use></svg><span>总览</span>
+        </button>
+        <button class="nav-item" data-view="assistant">
+          <svg class="icon"><use href="#i-terminal"></use></svg><span>对话操作</span>
+        </button>
+        <button class="nav-item" data-view="vulnerabilities">
+          <svg class="icon"><use href="#i-bug"></use></svg><span>漏洞巡检</span>
+        </button>
+        <button class="nav-item" data-view="audit">
+          <svg class="icon"><use href="#i-scroll"></use></svg><span>高危日志</span><span id="audit-badge" class="nav-badge hidden">0</span>
+        </button>
+        <button class="nav-item" data-view="rules">
+          <svg class="icon"><use href="#i-book"></use></svg><span>规则库</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="agent-state">
+          <span class="status-dot"></span>
+          <span><strong>监测运行中</strong><small id="agent-mode">本机模式</small></span>
+        </div>
+        <button id="logout-btn" class="icon-button" title="退出登录" aria-label="退出登录">
+          <svg class="icon"><use href="#i-log-out"></use></svg>
+        </button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <button id="mobile-menu" class="icon-button mobile-only" aria-label="打开导航">
+          <svg class="icon"><use href="#i-menu"></use></svg>
+        </button>
+        <div class="topbar-title">
+          <span id="page-title">总览</span>
+          <span id="system-name" class="muted">读取主机信息</span>
+        </div>
+        <div class="topbar-actions">
+          <span id="mode-chip" class="chip chip-neutral">安全检查</span>
+          <span id="clock" class="clock"></span>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="view active" data-view-panel="overview">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">系统安全态势</p>
+              <h1>今天需要处理什么？</h1>
+              <p class="lead">先看风险，再用一句话完成受控操作。</p>
+            </div>
+            <button id="scan-top-btn" class="btn btn-primary">
+              <svg class="icon"><use href="#i-refresh"></use></svg>
+              立即巡检
+            </button>
+          </div>
+
+          <div class="metrics-grid">
+            <article class="metric-card">
+              <div class="metric-head">
+                <span>安全评分</span>
+                <span class="metric-icon red"><svg class="icon"><use href="#i-shield"></use></svg></span>
+              </div>
+              <div class="metric-value"><span id="risk-score">--</span><small>/ 100</small></div>
+              <progress id="risk-progress" class="score-progress" max="100" value="0"></progress>
+              <p id="risk-caption" class="metric-note">尚未进行系统巡检</p>
+            </article>
+            <article class="metric-card">
+              <div class="metric-head">
+                <span>高风险项</span>
+                <span class="metric-icon amber"><svg class="icon"><use href="#i-alert"></use></svg></span>
+              </div>
+              <div class="metric-value"><span id="high-findings">0</span><small>项</small></div>
+              <p id="finding-caption" class="metric-note">暂无巡检数据</p>
+            </article>
+            <article class="metric-card">
+              <div class="metric-head">
+                <span>24 小时高危命令</span>
+                <span class="metric-icon teal"><svg class="icon"><use href="#i-terminal"></use></svg></span>
+              </div>
+              <div class="metric-value"><span id="audit-total">0</span><small>条</small></div>
+              <p id="audit-caption" class="metric-note">未发现待处理事件</p>
+            </article>
+            <article class="metric-card">
+              <div class="metric-head">
+                <span>系统运行</span>
+                <span class="metric-icon blue"><svg class="icon"><use href="#i-server"></use></svg></span>
+              </div>
+              <div id="uptime" class="metric-value metric-text">--</div>
+              <p id="os-caption" class="metric-note">读取 RHEL 信息</p>
+            </article>
+          </div>
+
+          <div class="overview-grid">
+            <section class="panel">
+              <div class="panel-head">
+                <div><h2>风险分布</h2><p>最近一次漏洞巡检结果</p></div>
+                <button class="text-button" data-go-view="vulnerabilities">
+                  查看详情 <svg class="icon"><use href="#i-chevron"></use></svg>
+                </button>
+              </div>
+              <div class="severity-list">
+                <div class="severity-row">
+                  <span class="severity-label"><i class="severity-dot critical"></i>严重</span>
+                  <progress id="bar-critical" class="severity-progress critical" max="10" value="0"></progress>
+                  <strong id="count-critical">0</strong>
+                </div>
+                <div class="severity-row">
+                  <span class="severity-label"><i class="severity-dot high"></i>高危</span>
+                  <progress id="bar-high" class="severity-progress high" max="10" value="0"></progress>
+                  <strong id="count-high">0</strong>
+                </div>
+                <div class="severity-row">
+                  <span class="severity-label"><i class="severity-dot medium"></i>中危</span>
+                  <progress id="bar-medium" class="severity-progress medium" max="10" value="0"></progress>
+                  <strong id="count-medium">0</strong>
+                </div>
+                <div class="severity-row">
+                  <span class="severity-label"><i class="severity-dot low"></i>低危</span>
+                  <progress id="bar-low" class="severity-progress low" max="10" value="0"></progress>
+                  <strong id="count-low">0</strong>
+                </div>
+              </div>
+              <div class="scan-meta">
+                <span><svg class="icon"><use href="#i-clock"></use></svg><span id="scan-time">尚未巡检</span></span>
+                <span id="scan-status">等待检查</span>
+              </div>
+            </section>
+
+            <section class="panel">
+              <div class="panel-head">
+                <div><h2>最近高危命令</h2><p>来自其他终端与 Agent 操作</p></div>
+                <button class="text-button" data-go-view="audit">
+                  查看日志 <svg class="icon"><use href="#i-chevron"></use></svg>
+                </button>
+              </div>
+              <div id="recent-events" class="event-list compact">
+                <div class="empty-inline">暂无高危命令记录</div>
+              </div>
+            </section>
+          </div>
+
+          <section class="quick-actions">
+            <div class="quick-copy">
+              <span class="quick-icon"><svg class="icon"><use href="#i-terminal"></use></svg></span>
+              <div><h2>用一句话操作</h2><p>支持中文和 English，变更前先看计划。</p></div>
+            </div>
+            <div id="quick-prompts" class="prompt-chips"></div>
+            <button class="btn btn-secondary" data-go-view="assistant">开始对话</button>
+          </section>
+        </section>
+
+        <section class="view" data-view-panel="assistant">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">受控操作助手</p>
+              <h1>告诉我你要做什么</h1>
+              <p class="lead">助手会匹配规则、检查风险，并给出可核对的命令计划。</p>
+            </div>
+            <span class="safety-label"><svg class="icon"><use href="#i-lock"></use></svg>仅执行规则库操作</span>
+          </div>
+          <div class="chat-layout panel">
+            <div id="chat-log" class="chat-log">
+              <div class="chat-row assistant">
+                <span class="chat-avatar"><svg class="icon"><use href="#i-shield"></use></svg></span>
+                <div class="chat-bubble">
+                  <p>你可以直接说要完成的任务。例如查看磁盘、修改网络地址，或把系统语言改成中文。</p>
+                  <div class="suggested-prompts">
+                    <button data-prompt="查看磁盘空间">查看磁盘空间</button>
+                    <button data-prompt="把系统语言改成中文">把系统语言改成中文</button>
+                    <button data-prompt="查看待安装的安全更新">查看安全更新</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <form id="chat-form" class="chat-composer">
+              <label class="sr-only" for="chat-input">输入操作要求</label>
+              <textarea id="chat-input" rows="2" placeholder="例如：把 ens160 的 IP 改成 192.168.1.50/24，网关 192.168.1.1，DNS 223.5.5.5"></textarea>
+              <button id="chat-send" class="send-button" type="submit" aria-label="发送">
+                <svg class="icon"><use href="#i-send"></use></svg>
+              </button>
+            </form>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="vulnerabilities">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">只读安全巡检</p>
+              <h1>系统漏洞与配置风险</h1>
+              <p class="lead">安全检查不会重启服务、修改配置或安装软件包。</p>
+            </div>
+            <button id="scan-page-btn" class="btn btn-primary">
+              <svg class="icon"><use href="#i-refresh"></use></svg>
+              重新巡检
+            </button>
+          </div>
+          <div class="summary-strip">
+            <div><span>检查项</span><strong id="checks-total">30</strong></div>
+            <div><span>已发现</span><strong id="checks-found">0</strong></div>
+            <div><span>严重 / 高危</span><strong id="checks-high">0</strong></div>
+            <div><span>最近巡检</span><strong id="checks-time">尚未运行</strong></div>
+          </div>
+          <div class="toolbar">
+            <div class="filter-tabs" id="severity-filters">
+              <button class="active" data-severity="all">全部</button>
+              <button data-severity="critical">严重</button>
+              <button data-severity="high">高危</button>
+              <button data-severity="medium">中危</button>
+              <button data-severity="low">低危</button>
+            </div>
+            <span id="finding-count" class="toolbar-note">0 个结果</span>
+          </div>
+          <div id="findings-list" class="findings-list"></div>
+        </section>
+
+        <section class="view" data-view-panel="audit">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">命令审计</p>
+              <h1>高危命令日志</h1>
+              <p class="lead">从其他终端执行的命令会由 auditd 和日志采集器识别。</p>
+            </div>
+            <div class="heading-actions">
+              <button id="audit-refresh-btn" class="btn btn-secondary">
+                <svg class="icon"><use href="#i-refresh"></use></svg>
+                刷新采集
+              </button>
+              <button id="audit-demo-btn" class="btn btn-quiet" title="写入模拟事件，不执行危险命令">
+                <svg class="icon"><use href="#i-terminal"></use></svg>
+                安全演练
+              </button>
+            </div>
+          </div>
+          <div class="audit-stats">
+            <div class="audit-stat critical"><span>严重</span><strong id="audit-critical">0</strong></div>
+            <div class="audit-stat high"><span>高危</span><strong id="audit-high">0</strong></div>
+            <div class="audit-stat medium"><span>中危</span><strong id="audit-medium">0</strong></div>
+            <div class="audit-stat"><span>待确认</span><strong id="audit-unack">0</strong></div>
+          </div>
+          <div class="toolbar">
+            <div class="filter-tabs" id="audit-filters">
+              <button class="active" data-audit-severity="all">全部</button>
+              <button data-audit-severity="critical">严重</button>
+              <button data-audit-severity="high">高危</button>
+              <button data-audit-severity="medium">中危</button>
+            </div>
+            <span id="audit-collected" class="toolbar-note">等待采集</span>
+          </div>
+          <div class="table-panel">
+            <table class="data-table">
+              <thead>
+                <tr><th>事件</th><th>命令</th><th>来源</th><th>时间</th><th></th></tr>
+              </thead>
+              <tbody id="audit-table-body"></tbody>
+            </table>
+            <div id="audit-empty" class="empty-state hidden">
+              <svg class="icon"><use href="#i-scroll"></use></svg>
+              <h2>暂无高危命令</h2>
+              <p>审计采集器正在监测新的命令事件。</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="view" data-view-panel="rules">
+          <div class="view-heading">
+            <div>
+              <p class="eyebrow">能力范围</p>
+              <h1>规则库</h1>
+              <p class="lead">自然语言只会映射到这里列出的受控操作。</p>
+            </div>
+            <div class="rule-counts">
+              <span><strong id="rule-count">0</strong> 操作</span>
+              <span><strong id="vuln-count">30</strong> 巡检项</span>
+              <span><strong id="audit-rule-count">31</strong> 审计规则</span>
+            </div>
+          </div>
+          <div class="toolbar rules-toolbar">
+            <label class="search-field">
+              <svg class="icon"><use href="#i-search"></use></svg>
+              <input id="rule-search" type="search" placeholder="搜索查看磁盘、网络、SSH...">
+            </label>
+            <div class="filter-tabs" id="risk-filters">
+              <button class="active" data-risk="all">全部</button>
+              <button data-risk="safe">只读</button>
+              <button data-risk="caution">谨慎</button>
+              <button data-risk="destructive">高风险</button>
+            </div>
+          </div>
+          <div class="table-panel">
+            <table class="data-table rules-table">
+              <thead>
+                <tr><th>操作</th><th>类别</th><th>风险</th><th>变更说明</th><th>重启</th></tr>
+              </thead>
+              <tbody id="rules-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <div id="confirm-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
+    <div class="modal">
+      <div class="modal-head">
+        <span id="confirm-icon" class="modal-icon"><svg class="icon"><use href="#i-alert"></use></svg></span>
+        <div><h2 id="confirm-title">确认执行操作</h2><p id="confirm-subtitle">请核对即将执行的内容</p></div>
+        <button id="confirm-close" class="icon-button" aria-label="关闭">
+          <svg class="icon"><use href="#i-x"></use></svg>
+        </button>
+      </div>
+      <div id="confirm-body" class="modal-body"></div>
+      <label id="confirm-phrase-wrap" class="field">
+        <span>输入确认语继续</span>
+        <input id="confirm-phrase" type="text" autocomplete="off">
+        <small id="confirm-phrase-hint"></small>
+      </label>
+      <div class="modal-actions">
+        <button id="confirm-cancel" class="btn btn-quiet">取消</button>
+        <button id="confirm-submit" class="btn btn-danger" disabled>确认执行</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

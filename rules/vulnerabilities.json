@@ -1,0 +1,275 @@
+{
+  "version": 1,
+  "checks": [
+    {
+      "id": "selinux_not_enforcing",
+      "title_zh": "SELinux 未处于强制模式",
+      "title_en": "SELinux is not enforcing",
+      "severity": "high",
+      "category": "access_control",
+      "detail_zh": "SELinux 未启用强制模式，进程越权行为缺少额外约束。",
+      "remediation_zh": "评估兼容性后执行 setenforce 1，并在 /etc/selinux/config 中设置 SELINUX=enforcing。"
+    },
+    {
+      "id": "firewalld_inactive",
+      "title_zh": "firewalld 未运行",
+      "title_en": "firewalld is inactive",
+      "severity": "high",
+      "category": "firewall",
+      "detail_zh": "主机防火墙服务未处于 active 状态。",
+      "remediation_zh": "执行 systemctl enable --now firewalld，并复核现有区域规则。"
+    },
+    {
+      "id": "sshd_root_login",
+      "title_zh": "SSH 允许 root 直接登录",
+      "title_en": "SSH root login is enabled",
+      "severity": "high",
+      "category": "ssh",
+      "detail_zh": "sshd 的 PermitRootLogin 设置为 yes，暴力破解成功后可直接获得超级用户权限。",
+      "remediation_zh": "在 /etc/ssh/sshd_config 中设置 PermitRootLogin no，验证配置后重载 sshd。"
+    },
+    {
+      "id": "sshd_password_auth",
+      "title_zh": "SSH 密码认证已启用",
+      "title_en": "SSH password authentication is enabled",
+      "severity": "medium",
+      "category": "ssh",
+      "detail_zh": "SSH 允许密码登录，存在弱口令和暴力破解风险。",
+      "remediation_zh": "在确认密钥登录可用后，设置 PasswordAuthentication no。"
+    },
+    {
+      "id": "sshd_empty_password",
+      "title_zh": "SSH 允许空密码",
+      "title_en": "SSH permits empty passwords",
+      "severity": "critical",
+      "category": "ssh",
+      "detail_zh": "PermitEmptyPasswords 已启用，空密码账户可能被远程登录。",
+      "remediation_zh": "设置 PermitEmptyPasswords no，并立即检查空密码账户。"
+    },
+    {
+      "id": "sshd_max_auth_tries",
+      "title_zh": "SSH 最大认证尝试次数过高",
+      "title_en": "SSH MaxAuthTries is high",
+      "severity": "low",
+      "category": "ssh",
+      "detail_zh": "MaxAuthTries 大于 4，会增加在线口令猜测窗口。",
+      "remediation_zh": "将 MaxAuthTries 设置为 4 或更低，并重载 sshd。"
+    },
+    {
+      "id": "sshd_weak_crypto",
+      "title_zh": "SSH 启用了弱加密算法",
+      "title_en": "SSH has weak cryptography enabled",
+      "severity": "high",
+      "category": "ssh",
+      "detail_zh": "sshd 有效配置中仍包含 3DES、RC4 或 MD5 系列算法。",
+      "remediation_zh": "从 Ciphers 和 MACs 配置中移除弱算法，使用系统 crypto-policy 的默认安全组合。"
+    },
+    {
+      "id": "firewalld_trusted_zone",
+      "title_zh": "默认防火墙区域为 trusted",
+      "title_en": "Default firewall zone is trusted",
+      "severity": "high",
+      "category": "firewall",
+      "detail_zh": "默认区域的 trusted 策略会放行大量流量。",
+      "remediation_zh": "将默认区域调整为 public 或最小暴露的专用区域。"
+    },
+    {
+      "id": "pending_security_updates",
+      "title_zh": "存在待安装的安全更新",
+      "title_en": "Security updates are pending",
+      "severity": "medium",
+      "category": "patch",
+      "detail_zh": "dnf 仓库中存在尚未安装的安全更新。",
+      "remediation_zh": "在维护窗口执行 dnf update --security，并在需要时重启。"
+    },
+    {
+      "id": "dnf_gpgcheck_disabled",
+      "title_zh": "软件包签名校验未启用",
+      "title_en": "DNF GPG signature checks are disabled",
+      "severity": "high",
+      "category": "patch",
+      "detail_zh": "dnf 配置中 gpgcheck 或 repo_gpgcheck 被关闭，软件包来源完整性无法可靠验证。",
+      "remediation_zh": "在 /etc/dnf/dnf.conf 中设置 gpgcheck=1 和 repo_gpgcheck=1。"
+    },
+    {
+      "id": "chronyd_inactive",
+      "title_zh": "时间同步服务未运行",
+      "title_en": "chronyd is inactive",
+      "severity": "medium",
+      "category": "time",
+      "detail_zh": "chronyd 未运行，日志时间、证书校验和审计时间线可能不可靠。",
+      "remediation_zh": "执行 systemctl enable --now chronyd。"
+    },
+    {
+      "id": "auditd_inactive",
+      "title_zh": "auditd 未运行",
+      "title_en": "auditd is inactive",
+      "severity": "medium",
+      "category": "audit",
+      "detail_zh": "系统审计服务未运行，关键操作追溯能力下降。",
+      "remediation_zh": "执行 systemctl enable --now auditd，并确认审计规则已加载。"
+    },
+    {
+      "id": "rsyslog_inactive",
+      "title_zh": "rsyslog 未运行",
+      "title_en": "rsyslog is inactive",
+      "severity": "low",
+      "category": "logging",
+      "detail_zh": "传统系统日志服务未运行，部分安全日志可能无法落盘。",
+      "remediation_zh": "执行 systemctl enable --now rsyslog，确认 /var/log/secure 正常写入。"
+    },
+    {
+      "id": "password_no_expiry",
+      "title_zh": "人类账户密码永不过期",
+      "title_en": "Human account passwords never expire",
+      "severity": "low",
+      "category": "account",
+      "detail_zh": "部分 UID >= 1000 的账户未设置密码最长使用期限。",
+      "remediation_zh": "按组织策略使用 chage -M 365 <用户名> 设置最长使用期限。"
+    },
+    {
+      "id": "uid_zero_duplicate",
+      "title_zh": "存在多个 UID 为 0 的账户",
+      "title_en": "Multiple UID 0 accounts exist",
+      "severity": "high",
+      "category": "account",
+      "detail_zh": "除 root 外还有账户使用 UID 0，可能隐藏超级用户权限。",
+      "remediation_zh": "确认账户用途并移除不必要的 UID 0 账户。"
+    },
+    {
+      "id": "empty_password_accounts",
+      "title_zh": "存在空密码账户",
+      "title_en": "Accounts with empty passwords exist",
+      "severity": "critical",
+      "category": "account",
+      "detail_zh": "/etc/shadow 中存在密码字段为空的账户。",
+      "remediation_zh": "立即为用户设置强密码，或使用 usermod -L 锁定账户。"
+    },
+    {
+      "id": "sudo_nopasswd",
+      "title_zh": "sudo 配置存在免密提权",
+      "title_en": "Passwordless sudo is configured",
+      "severity": "high",
+      "category": "account",
+      "detail_zh": "sudoers 中存在 NOPASSWD 规则，账户被盗后可直接提权。",
+      "remediation_zh": "审查 /etc/sudoers 和 /etc/sudoers.d，移除不必要的 NOPASSWD。"
+    },
+    {
+      "id": "sensitive_world_writable",
+      "title_zh": "敏感系统文件可被所有用户写入",
+      "title_en": "Sensitive system files are world-writable",
+      "severity": "critical",
+      "category": "filesystem",
+      "detail_zh": "关键账户或 SSH 配置文件具有 other-write 权限。",
+      "remediation_zh": "立即移除其他用户写权限并检查文件完整性。"
+    },
+    {
+      "id": "tmp_missing_isolation",
+      "title_zh": "/tmp 缺少隔离挂载选项",
+      "title_en": "/tmp lacks isolation mount options",
+      "severity": "low",
+      "category": "filesystem",
+      "detail_zh": "/tmp 未同时启用 nodev 和 nosuid，降低临时目录攻击门槛。",
+      "remediation_zh": "通过 systemd 或 /etc/fstab 为 /tmp 配置 nodev,nosuid,noexec（先评估业务兼容性）。"
+    },
+    {
+      "id": "crypto_policy_legacy",
+      "title_zh": "系统加密策略为 LEGACY",
+      "title_en": "System crypto policy is LEGACY",
+      "severity": "high",
+      "category": "crypto",
+      "detail_zh": "系统允许旧版 TLS、算法或密钥交换。",
+      "remediation_zh": "在兼容性评估后执行 update-crypto-policies --set DEFAULT。"
+    },
+    {
+      "id": "aslr_disabled",
+      "title_zh": "地址空间随机化未完全启用",
+      "title_en": "ASLR is not fully enabled",
+      "severity": "medium",
+      "category": "kernel",
+      "detail_zh": "kernel.randomize_va_space 小于 2，内存攻击缓解能力下降。",
+      "remediation_zh": "设置 kernel.randomize_va_space=2 并持久化。"
+    },
+    {
+      "id": "ip_forwarding_enabled",
+      "title_zh": "IPv4 转发已开启",
+      "title_en": "IPv4 forwarding is enabled",
+      "severity": "low",
+      "category": "network",
+      "detail_zh": "主机开启了 IP 转发；若设备并非路由器或容器宿主，应关闭。",
+      "remediation_zh": "确认用途后设置 net.ipv4.ip_forward=0。"
+    },
+    {
+      "id": "core_dump_suid_enabled",
+      "title_zh": "SUID 程序可生成核心转储",
+      "title_en": "SUID programs may dump core",
+      "severity": "medium",
+      "category": "kernel",
+      "detail_zh": "fs.suid_dumpable 已开启，核心转储可能包含敏感内存。",
+      "remediation_zh": "按业务要求设置 fs.suid_dumpable=0。"
+    },
+    {
+      "id": "nfs_exports_wildcard",
+      "title_zh": "NFS 导出范围过宽",
+      "title_en": "NFS exports are overly broad",
+      "severity": "high",
+      "category": "network",
+      "detail_zh": "/etc/exports 中存在通配客户端或 no_root_squash。",
+      "remediation_zh": "限制导出网段，启用 root_squash，并按最小权限设置选项。"
+    },
+    {
+      "id": "telnet_server_installed",
+      "title_zh": "安装了 Telnet 服务端",
+      "title_en": "Telnet server is installed",
+      "severity": "high",
+      "category": "service",
+      "detail_zh": "系统安装了 telnet-server，Telnet 不提供传输加密。",
+      "remediation_zh": "确认无业务依赖后卸载 telnet-server。"
+    },
+    {
+      "id": "ftp_server_installed",
+      "title_zh": "安装了明文 FTP 服务端",
+      "title_en": "Plain FTP server is installed",
+      "severity": "medium",
+      "category": "service",
+      "detail_zh": "系统安装了 vsftpd，默认可能使用明文 FTP。",
+      "remediation_zh": "优先迁移到 SFTP；如保留 FTP，应强制 FTPS 并限制访问来源。"
+    },
+    {
+      "id": "dnf_automatic_disabled",
+      "title_zh": "自动安全更新未启用",
+      "title_en": "Automatic security updates are disabled",
+      "severity": "low",
+      "category": "patch",
+      "detail_zh": "dnf-automatic.timer 未启用，安全更新依赖人工安排。",
+      "remediation_zh": "评估变更策略后启用 dnf-automatic.timer 或接入集中补丁平台。"
+    },
+    {
+      "id": "usbguard_absent",
+      "title_zh": "USBGuard 未运行",
+      "title_en": "USBGuard is not active",
+      "severity": "low",
+      "category": "device",
+      "detail_zh": "未检测到活动的 USBGuard 服务，USB 设备接入缺少策略控制。",
+      "remediation_zh": "在需要外设管控的生产主机上安装并配置 USBGuard。"
+    },
+    {
+      "id": "aide_absent",
+      "title_zh": "未安装文件完整性工具 AIDE",
+      "title_en": "AIDE file-integrity tool is absent",
+      "severity": "low",
+      "category": "integrity",
+      "detail_zh": "未检测到 AIDE，无法定期校验关键系统文件是否被篡改。",
+      "remediation_zh": "安装 AIDE，建立基线并配置定期校验任务。"
+    },
+    {
+      "id": "journald_volatile",
+      "title_zh": "journald 日志未持久化",
+      "title_en": "journald storage is volatile",
+      "severity": "low",
+      "category": "logging",
+      "detail_zh": "journald 配置为易失存储，重启后可能丢失关键日志。",
+      "remediation_zh": "在 /etc/systemd/journald.conf 设置 Storage=persistent 并创建 /var/log/journal。"
+    }
+  ]
+}

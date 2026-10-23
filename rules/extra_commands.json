@@ -1,0 +1,641 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "id": "show_kernel_version",
+      "title_zh": "查看内核版本",
+      "title_en": "Show kernel version",
+      "category": "system",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示|查询).*(内核|kernel).*(版本|信息)?",
+        "\\b(show|check|display).*(kernel|uname).*(version|info)?\\b"
+      ],
+      "commands": [["uname", "-a"]],
+      "summary_zh": "显示内核版本、主机架构和系统标识。",
+      "impact_zh": "只读操作，不会修改系统。",
+      "summary_en": "Shows the kernel build, host architecture, and system identifiers.",
+      "impact_en": "Read-only and does not modify the system."
+    },
+    {
+      "id": "show_cpu_info",
+      "title_zh": "查看 CPU 信息",
+      "title_en": "Show CPU information",
+      "category": "system",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示|查询).*(CPU|cpu|处理器).*(信息|型号|核心|状态)?",
+        "\\b(show|check|display).*(cpu|processor).*(info|model|core|usage)?\\b"
+      ],
+      "commands": [["lscpu"]],
+      "summary_zh": "显示处理器架构、核心数、线程和虚拟化能力。",
+      "impact_zh": "只读操作，不会修改系统。",
+      "summary_en": "Shows processor architecture, core count, threads, and virtualization capabilities.",
+      "impact_en": "Read-only and does not modify the system."
+    },
+    {
+      "id": "show_block_devices",
+      "title_zh": "查看块设备",
+      "title_en": "Show block devices",
+      "category": "storage",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示|列出).*(块设备|磁盘设备|分区|lsblk)",
+        "\\b(show|list|display).*(block devices?|disk devices?|partitions?|lsblk)\\b"
+      ],
+      "commands": [["lsblk", "-f"]],
+      "summary_zh": "列出磁盘、分区、文件系统类型和挂载点。",
+      "impact_zh": "只读操作，不会修改磁盘或分区。",
+      "summary_en": "Lists disks, partitions, filesystem types, and mount points.",
+      "impact_en": "Read-only and does not modify disks or partitions."
+    },
+    {
+      "id": "show_disk_inodes",
+      "title_zh": "查看 inode 使用",
+      "title_en": "Show inode usage",
+      "category": "storage",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(inode|索引节点).*(使用|占用|空间)?",
+        "\\b(show|check|display).*(inode|inodes).*(usage|space)?\\b"
+      ],
+      "commands": [["df", "-i"]],
+      "summary_zh": "显示各文件系统的 inode 使用率。",
+      "impact_zh": "只读操作，不会修改文件系统。",
+      "summary_en": "Shows inode usage for mounted filesystems.",
+      "impact_en": "Read-only and does not modify filesystems."
+    },
+    {
+      "id": "show_routes",
+      "title_zh": "查看路由表",
+      "title_en": "Show routing table",
+      "category": "network",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(路由表|路由规则|route table)",
+        "\\b(show|check|display).*(routing table|route table|routes)\\b"
+      ],
+      "commands": [["ip", "route", "show"]],
+      "summary_zh": "显示当前 IPv4 路由和默认下一跳。",
+      "impact_zh": "只读操作，不会修改网络。",
+      "summary_en": "Shows the current IPv4 routes and default next hop.",
+      "impact_en": "Read-only and does not modify networking."
+    },
+    {
+      "id": "show_default_gateway",
+      "title_zh": "查看默认网关",
+      "title_en": "Show default gateway",
+      "category": "network",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(默认网关|default gateway)",
+        "\\b(show|check|display).*(default gateway|default route)\\b"
+      ],
+      "commands": [["ip", "route", "show", "default"]],
+      "summary_zh": "显示系统的默认网关和出口接口。",
+      "impact_zh": "只读操作，不会修改网络。",
+      "summary_en": "Shows the default gateway and outbound interface.",
+      "impact_en": "Read-only and does not modify networking."
+    },
+    {
+      "id": "show_active_connections",
+      "title_zh": "查看活动连接",
+      "title_en": "Show active connections",
+      "category": "network",
+      "risk": "safe",
+      "group": "connection_read",
+      "patterns": [
+        "(查看|检查|显示).*(活动连接|网络连接|监听连接|socket)",
+        "\\b(show|check|display|list).*(active connections?|network connections?|sockets?)\\b"
+      ],
+      "commands": [["ss", "-tunap"]],
+      "summary_zh": "列出 TCP/UDP 连接、监听端口和关联进程。",
+      "impact_zh": "只读操作，不会中断连接。",
+      "summary_en": "Lists TCP/UDP connections, listening ports, and associated processes.",
+      "impact_en": "Read-only and does not interrupt connections."
+    },
+    {
+      "id": "show_logged_in_users",
+      "title_zh": "查看在线用户",
+      "title_en": "Show logged-in users",
+      "category": "account",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(在线用户|登录用户|当前会话|谁在线)",
+        "\\b(show|list|display|check).*(logged.?in users?|active sessions?|who is online)\\b"
+      ],
+      "commands": [["who"]],
+      "summary_zh": "显示当前登录终端、用户和登录时间。",
+      "impact_zh": "只读操作，不会影响登录会话。",
+      "summary_en": "Shows active terminals, usernames, and login times.",
+      "impact_en": "Read-only and does not affect login sessions."
+    },
+    {
+      "id": "show_recent_logins",
+      "title_zh": "查看最近登录",
+      "title_en": "Show recent logins",
+      "category": "account",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(最近登录|登录历史|历史登录)",
+        "\\b(show|check|display|list).*(recent logins?|login history)\\b"
+      ],
+      "commands": [["last", "-n", "20"]],
+      "summary_zh": "显示最近 20 条成功登录和会话记录。",
+      "impact_zh": "只读操作，不会修改登录记录。",
+      "summary_en": "Shows the 20 most recent login and session records.",
+      "impact_en": "Read-only and does not modify login records."
+    },
+    {
+      "id": "show_service_status",
+      "title_zh": "查看服务状态",
+      "title_en": "Show service status",
+      "category": "services",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(服务).*(状态|运行情况)",
+        "\\b(show|check|display).*(service|unit).*(status|state)\\b"
+      ],
+      "params": {
+        "service": {
+          "label_zh": "服务名",
+          "label_en": "Service name",
+          "placeholder": "sshd",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "service",
+          "required": true
+        }
+      },
+      "commands": [["systemctl", "status", "{{service}}", "--no-pager"]],
+      "accepted_exit_codes": [0, 3],
+      "summary_zh": "显示指定 systemd 服务的状态和最近日志。",
+      "impact_zh": "只读操作，不会启动或停止服务。",
+      "summary_en": "Shows the state and recent journal entries for a systemd service.",
+      "impact_en": "Read-only and does not start or stop the service."
+    },
+    {
+      "id": "show_dns_config",
+      "title_zh": "查看 DNS 配置",
+      "title_en": "Show DNS configuration",
+      "category": "network",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(DNS|dns).*(配置|服务器|解析器)",
+        "\\b(show|check|display).*(dns|resolver|nameserver).*(config|configuration|server)?\\b"
+      ],
+      "commands": [["resolvectl", "status"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "显示系统解析器、DNS 服务器和接口级配置。",
+      "impact_zh": "只读操作，不会修改 DNS。",
+      "summary_en": "Shows the system resolver, DNS servers, and per-interface configuration.",
+      "impact_en": "Read-only and does not modify DNS."
+    },
+    {
+      "id": "show_package_info",
+      "title_zh": "查看软件包信息",
+      "title_en": "Show package information",
+      "category": "package",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示|查询).*(软件包|package).*(信息|版本|是否安装)",
+        "\\b(show|check|query|display).*(package|rpm).*(info|version|installed)?\\b"
+      ],
+      "params": {
+        "package": {
+          "label_zh": "软件包名",
+          "label_en": "Package name",
+          "placeholder": "openssh-server",
+          "pattern": "^[A-Za-z0-9_.+-]{2,100}$",
+          "extractor": "package",
+          "required": true
+        }
+      },
+      "commands": [["rpm", "-q", "{{package}}"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "查询指定 RPM 软件包是否安装及其版本。",
+      "impact_zh": "只读操作，不会安装或删除软件包。",
+      "summary_en": "Checks whether an RPM package is installed and shows its version.",
+      "impact_en": "Read-only and does not install or remove packages."
+    },
+    {
+      "id": "show_kernel_packages",
+      "title_zh": "查看已安装内核",
+      "title_en": "List installed kernels",
+      "category": "patch",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(已安装).*(内核|kernel)",
+        "\\b(list|show|display).*(installed).*(kernel|kernels)\\b"
+      ],
+      "commands": [["rpm", "-q", "kernel"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "列出当前可回退的已安装内核版本。",
+      "impact_zh": "只读操作，不会删除旧内核。",
+      "summary_en": "Lists installed kernel versions available for rollback.",
+      "impact_en": "Read-only and does not remove old kernels."
+    },
+    {
+      "id": "show_systemd_timers",
+      "title_zh": "查看系统定时器",
+      "title_en": "Show systemd timers",
+      "category": "schedule",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(systemd|系统).*(定时器|timer)",
+        "\\b(show|list|display).*(systemd|system).*(timers?)\\b"
+      ],
+      "commands": [["systemctl", "list-timers", "--all", "--no-pager"]],
+      "summary_zh": "列出 systemd 定时器、下次运行时间和计划任务。",
+      "impact_zh": "只读操作，不会修改定时任务。",
+      "summary_en": "Lists systemd timers, next run times, and scheduled units.",
+      "impact_en": "Read-only and does not modify scheduled jobs."
+    },
+    {
+      "id": "show_firewall_services",
+      "title_zh": "查看防火墙服务",
+      "title_en": "Show allowed firewall services",
+      "category": "firewall",
+      "risk": "safe",
+      "group": "firewall_read",
+      "priority": 2,
+      "patterns": [
+        "(查看|列出|显示).*(防火墙).*(服务|允许)",
+        "\\b(show|list|display).*(firewall).*(services?|allowed)\\b"
+      ],
+      "commands": [["firewall-cmd", "--list-services"]],
+      "summary_zh": "列出防火墙默认区域允许的服务。",
+      "impact_zh": "只读操作，不会修改防火墙规则。",
+      "summary_en": "Lists services allowed in the default firewall zone.",
+      "impact_en": "Read-only and does not modify firewall rules."
+    },
+    {
+      "id": "show_selinux_booleans",
+      "title_zh": "查看 SELinux 布尔值",
+      "title_en": "Show SELinux booleans",
+      "category": "security",
+      "risk": "safe",
+      "group": "selinux_read",
+      "priority": 1,
+      "patterns": [
+        "(查看|列出|显示).*(SELinux|selinux).*(布尔|boolean)",
+        "\\b(show|list|display).*(selinux).*(booleans?)\\b"
+      ],
+      "commands": [["getsebool", "-a"]],
+      "summary_zh": "列出 SELinux 策略布尔开关和当前状态。",
+      "impact_zh": "只读操作，不会修改 SELinux 策略。",
+      "summary_en": "Lists SELinux policy booleans and their current state.",
+      "impact_en": "Read-only and does not modify SELinux policy."
+    },
+    {
+      "id": "show_mounts",
+      "title_zh": "查看挂载信息",
+      "title_en": "Show mounted filesystems",
+      "category": "filesystem",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(挂载|mount).*(信息|列表|文件系统)",
+        "\\b(show|list|display).*(mounts?|mounted filesystems?)\\b"
+      ],
+      "commands": [["findmnt", "--real"]],
+      "summary_zh": "显示真实文件系统的挂载点、类型和挂载参数。",
+      "impact_zh": "只读操作，不会卸载或修改文件系统。",
+      "summary_en": "Shows mount points, filesystem types, and mount options for real filesystems.",
+      "impact_en": "Read-only and does not unmount or modify filesystems."
+    },
+    {
+      "id": "show_tuned_profile",
+      "title_zh": "查看性能调优配置",
+      "title_en": "Show tuned profile",
+      "category": "system",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(tuned|性能调优|tuning).*(配置|profile|状态)?",
+        "\\b(show|check|display).*(tuned|tuning).*(profile|status)?\\b"
+      ],
+      "commands": [["tuned-adm", "active"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "显示当前生效的 RHEL tuned 性能配置。",
+      "impact_zh": "只读操作，不会切换调优配置。",
+      "summary_en": "Shows the active RHEL tuned performance profile.",
+      "impact_en": "Read-only and does not switch profiles."
+    },
+    {
+      "id": "show_dnf_history",
+      "title_zh": "查看软件安装历史",
+      "title_en": "Show DNF history",
+      "category": "patch",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示).*(dnf|yum).*(历史|history)",
+        "\\b(show|list|display).*(dnf|yum).*(history|transactions?)\\b"
+      ],
+      "commands": [["dnf", "history", "list"]],
+      "accepted_exit_codes": [0, 1],
+      "summary_zh": "列出最近的软件安装、升级和卸载事务。",
+      "impact_zh": "只读操作，不会回滚软件事务。",
+      "summary_en": "Lists recent package install, upgrade, and removal transactions.",
+      "impact_en": "Read-only and does not roll back package transactions."
+    },
+    {
+      "id": "test_dns_resolution",
+      "title_zh": "测试域名解析",
+      "title_en": "Test DNS resolution",
+      "category": "network",
+      "risk": "safe",
+      "patterns": [
+        "(测试|检查|验证).*(域名|DNS).*(解析|查询)",
+        "\\b(test|check|verify).*(dns|domain).*(resolution|lookup)\\b"
+      ],
+      "params": {
+        "host": {
+          "label_zh": "域名",
+          "label_en": "Hostname",
+          "placeholder": "example.com",
+          "pattern": "^(?=.{1,253}$)(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.)*[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?$",
+          "extractor": "host",
+          "required": true
+        }
+      },
+      "commands": [["getent", "hosts", "{{host}}"]],
+      "accepted_exit_codes": [0, 2],
+      "summary_zh": "使用系统解析器查询域名对应的地址。",
+      "impact_zh": "只读操作，不会修改网络配置。",
+      "summary_en": "Uses the system resolver to look up addresses for a hostname.",
+      "impact_en": "Read-only and does not modify network configuration."
+    },
+    {
+      "id": "test_network_connectivity",
+      "title_zh": "测试网络连通性",
+      "title_en": "Test network connectivity",
+      "category": "network",
+      "risk": "safe",
+      "patterns": [
+        "(测试|检查|验证).*(网络|主机).*(连通|可达|ping)",
+        "\\b(test|check|verify|ping).*(connectivity|reachability|host)\\b"
+      ],
+      "params": {
+        "host": {
+          "label_zh": "目标主机或地址",
+          "label_en": "Target host or address",
+          "placeholder": "192.168.1.1",
+          "pattern": "^(?:[A-Za-z0-9](?:[A-Za-z0-9.-]{0,251}[A-Za-z0-9])?|(?:(?:\\d{1,3}\\.){3}\\d{1,3}))$",
+          "extractor": "host",
+          "required": true
+        }
+      },
+      "commands": [["ping", "-c", "4", "{{host}}"]],
+      "accepted_exit_codes": [0, 1, 2],
+      "summary_zh": "向目标发送四个 ICMP 测试包并显示连通结果。",
+      "impact_zh": "只读网络探测，不会修改本机配置。",
+      "summary_en": "Sends four ICMP probes to the target and reports reachability.",
+      "impact_en": "Read-only network probe that does not modify local configuration."
+    },
+    {
+      "id": "show_boot_errors",
+      "title_zh": "查看本次启动错误",
+      "title_en": "Show current boot errors",
+      "category": "logs",
+      "risk": "safe",
+      "patterns": [
+        "(查看|检查|显示).*(本次启动|当前启动|开机).*(错误|日志|error)",
+        "\\b(show|check|display).*(current boot|boot).*(errors?|logs?)\\b"
+      ],
+      "commands": [["journalctl", "-b", "-p", "err", "-n", "80", "--no-pager"]],
+      "summary_zh": "读取本次启动以来的错误级 journal 日志。",
+      "impact_zh": "只读操作，不会清理或修改日志。",
+      "summary_en": "Reads error-level journal entries from the current boot.",
+      "impact_en": "Read-only and does not clear or modify logs."
+    },
+    {
+      "id": "start_service",
+      "title_zh": "启动服务",
+      "title_en": "Start a service",
+      "category": "services",
+      "risk": "caution",
+      "patterns": [
+        "(启动|开启|运行).*(服务).*(即可|现在)?",
+        "\\b(start|run).*(service|unit)\\b"
+      ],
+      "params": {
+        "service": {
+          "label_zh": "服务名",
+          "label_en": "Service name",
+          "placeholder": "nginx",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "service",
+          "required": true
+        }
+      },
+      "commands": [["systemctl", "start", "{{service}}"]],
+      "post_check": [["systemctl", "is-active", "{{service}}"]],
+      "summary_zh": "立即启动指定 systemd 服务，不修改开机自启状态。",
+      "impact_zh": "服务会开始监听端口并消耗系统资源。",
+      "summary_en": "Starts a systemd service now without changing its boot-time enablement.",
+      "impact_en": "The service will begin listening on its ports and consuming resources.",
+      "confirmation_phrase": "确认启动服务"
+    },
+    {
+      "id": "stop_service",
+      "title_zh": "停止服务",
+      "title_en": "Stop a service",
+      "category": "services",
+      "risk": "destructive",
+      "patterns": [
+        "(停止|关闭).*(服务)(?!.*(禁用|disable))",
+        "\\b(stop).*(service|unit)\\b"
+      ],
+      "params": {
+        "service": {
+          "label_zh": "服务名",
+          "label_en": "Service name",
+          "placeholder": "httpd",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "service",
+          "required": true
+        }
+      },
+      "commands": [["systemctl", "stop", "{{service}}"]],
+      "post_check": [["systemctl", "is-active", "{{service}}"]],
+      "summary_zh": "立即停止指定服务，但保留其开机自启配置。",
+      "impact_zh": "依赖该服务的业务会立即中断，SSH 等关键服务可能导致断连。",
+      "summary_en": "Stops a service now while preserving its boot-time enablement.",
+      "impact_en": "Dependent workloads stop immediately. Stopping SSH may disconnect this session.",
+      "confirmation_phrase": "确认停止服务",
+      "network_disconnect_if": "sshd"
+    },
+    {
+      "id": "enable_firewalld",
+      "title_zh": "启用并开机启动防火墙",
+      "title_en": "Enable and start firewalld",
+      "category": "firewall",
+      "risk": "caution",
+      "patterns": [
+        "(启用|开启).*(firewalld|防火墙).*(开机|启动|服务)?",
+        "\\b(enable|start).*(firewalld|firewall service)\\b"
+      ],
+      "commands": [["systemctl", "enable", "--now", "firewalld"]],
+      "post_check": [["systemctl", "is-active", "firewalld"]],
+      "summary_zh": "立即启动 firewalld 并设置开机自动启动。",
+      "impact_zh": "现有网络连接通常保留，但未放行的新连接可能被阻断。",
+      "summary_en": "Starts firewalld now and enables it at boot.",
+      "impact_en": "Existing connections usually remain, but new connections may be blocked until allowed.",
+      "confirmation_phrase": "确认启用防火墙"
+    },
+    {
+      "id": "reload_firewalld",
+      "title_zh": "重载防火墙规则",
+      "title_en": "Reload firewall rules",
+      "category": "firewall",
+      "risk": "caution",
+      "patterns": [
+        "(重载|重新加载|刷新).*(firewalld|防火墙)",
+        "\\b(reload|refresh).*(firewalld|firewall rules)\\b"
+      ],
+      "commands": [["firewall-cmd", "--reload"]],
+      "post_check": [["firewall-cmd", "--state"]],
+      "summary_zh": "在不重启服务的情况下重新加载持久化防火墙规则。",
+      "impact_zh": "新规则会立即生效，未放行连接可能被中断。",
+      "summary_en": "Reloads persistent firewall rules without restarting the service.",
+      "impact_en": "New rules take effect immediately and unapproved connections may be interrupted.",
+      "confirmation_phrase": "确认重载防火墙"
+    },
+    {
+      "id": "set_selinux_enforcing",
+      "title_zh": "启用 SELinux 强制模式",
+      "title_en": "Enable SELinux enforcing mode",
+      "category": "security",
+      "risk": "caution",
+      "patterns": [
+        "(启用|开启|恢复).*(SELinux|selinux).*(强制|enforcing)",
+        "\\b(enable|set).*(selinux).*(enforcing)\\b"
+      ],
+      "commands": [["setenforce", "1"]],
+      "post_check": [["getenforce"]],
+      "summary_zh": "将当前运行时的 SELinux 模式切换为 Enforcing。",
+      "impact_zh": "不正确或缺失的 SELinux 标签可能导致业务服务被拒绝访问。",
+      "summary_en": "Switches the runtime SELinux mode to Enforcing.",
+      "impact_en": "Incorrect or missing SELinux labels may cause services to be denied access.",
+      "confirmation_phrase": "确认启用 SELinux 强制模式"
+    },
+    {
+      "id": "create_group",
+      "title_zh": "创建用户组",
+      "title_en": "Create a group",
+      "category": "account",
+      "risk": "caution",
+      "patterns": [
+        "(创建|新增|添加)(?:一个|个)?(?:用户组|组)",
+        "\\b(create|add)\\s+(?:a\\s+)?(?:user\\s+)?group\\b"
+      ],
+      "params": {
+        "groupname": {
+          "label_zh": "用户组名",
+          "label_en": "Group name",
+          "placeholder": "ops-team",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "groupname",
+          "required": true
+        }
+      },
+      "commands": [["groupadd", "--", "{{groupname}}"]],
+      "post_check": [["getent", "group", "{{groupname}}"]],
+      "summary_zh": "创建一个新的本地用户组。",
+      "impact_zh": "会新增系统组记录，后续可用于文件权限和成员管理。",
+      "summary_en": "Creates a new local user group.",
+      "impact_en": "Adds a system group record for later permission and membership management.",
+      "confirmation_phrase": "确认创建用户组"
+    },
+    {
+      "id": "add_user_to_group",
+      "title_zh": "添加用户到组",
+      "title_en": "Add a user to a group",
+      "category": "account",
+      "risk": "caution",
+      "patterns": [
+        "(添加|加入|把).*(用户).*(到|至|进).*(组|group)",
+        "\\b(add).*(user).*(to).*(group)\\b"
+      ],
+      "params": {
+        "username": {
+          "label_zh": "用户名",
+          "label_en": "Username",
+          "placeholder": "deploy",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "username",
+          "required": true
+        },
+        "groupname": {
+          "label_zh": "用户组名",
+          "label_en": "Group name",
+          "placeholder": "wheel",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "groupname",
+          "required": true
+        }
+      },
+      "commands": [["usermod", "-aG", "{{groupname}}", "{{username}}"]],
+      "post_check": [["id", "{{username}}"]],
+      "summary_zh": "将已有用户追加到一个附加组，不移除其他组成员关系。",
+      "impact_zh": "用户会获得该组关联的权限，加入到 wheel 组还会获得 sudo 资格。",
+      "summary_en": "Adds an existing user to a supplementary group without removing other memberships.",
+      "impact_en": "The user gains permissions granted to that group; adding to wheel may grant sudo access.",
+      "confirmation_phrase": "确认修改用户组"
+    },
+    {
+      "id": "unlock_user",
+      "title_zh": "解锁用户账户",
+      "title_en": "Unlock a user account",
+      "category": "account",
+      "risk": "caution",
+      "patterns": [
+        "(解锁|恢复).*(用户|账户|账号)",
+        "\\b(unlock|reenable).*(user|account)\\b"
+      ],
+      "params": {
+        "username": {
+          "label_zh": "用户名",
+          "label_en": "Username",
+          "placeholder": "deploy",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "username",
+          "required": true
+        }
+      },
+      "commands": [["usermod", "-U", "{{username}}"]],
+      "post_check": [["passwd", "-S", "{{username}}"]],
+      "summary_zh": "解除用户密码锁定，允许该账户重新认证。",
+      "impact_zh": "账户重新具备登录能力，可能扩大攻击面。",
+      "summary_en": "Removes the password lock so the account can authenticate again.",
+      "impact_en": "The account can log in again, which may increase the attack surface.",
+      "confirmation_phrase": "确认解锁用户"
+    },
+    {
+      "id": "expire_user_password",
+      "title_zh": "强制用户下次改密",
+      "title_en": "Force a password change",
+      "category": "account",
+      "risk": "caution",
+      "patterns": [
+        "(强制|要求).*(用户|账户).*(下次|立即|改密|修改密码)",
+        "\\b(force|require).*(user|account).*(password change|change password)\\b"
+      ],
+      "params": {
+        "username": {
+          "label_zh": "用户名",
+          "label_en": "Username",
+          "placeholder": "deploy",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "username",
+          "required": true
+        }
+      },
+      "commands": [["chage", "-d", "0", "{{username}}"]],
+      "post_check": [["chage", "-l", "{{username}}"]],
+      "summary_zh": "把密码最后修改日期设为 0，要求用户下次登录修改密码。",
+      "impact_zh": "用户下一次登录时必须修改密码，非交互登录可能失败。",
+      "summary_en": "Sets the last password change date to zero so the user must change it at next login.",
+      "impact_en": "The user must change the password at next login; non-interactive logins may fail.",
+      "confirmation_phrase": "确认强制修改密码"
+    }
+  ]
+}

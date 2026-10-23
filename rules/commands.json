@@ -1,0 +1,1051 @@
+{
+  "version": 1,
+  "actions": [
+    {
+      "id": "system_overview",
+      "title_zh": "查看系统概况",
+      "title_en": "Show system overview",
+      "category": "system",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(系统|主机).*(概况|状态|信息)",
+        "\\b(show|check|display).*(system|host).*(overview|status|info)\\b"
+      ],
+      "commands": [["hostnamectl"], ["uptime"], ["free", "-h"], ["df", "-hT"]],
+      "summary_zh": "读取主机名、运行时间、内存和磁盘概况。",
+      "impact_zh": "只读操作，不会修改系统。"
+    },
+    {
+      "id": "show_time",
+      "title_zh": "查看时间与时区",
+      "title_en": "Show date and timezone",
+      "category": "time",
+      "risk": "safe",
+      "group": "time_read",
+      "patterns": [
+        "(查看|看看|显示|检查|查询|现在).*(时间|日期|时区|几点)",
+        "\\b(show|check|display|what).*(time|date|timezone)\\b"
+      ],
+      "commands": [["timedatectl", "status"]],
+      "summary_zh": "读取当前时间、时区和 NTP 同步状态。",
+      "impact_zh": "只读操作，不会修改系统。"
+    },
+    {
+      "id": "show_network",
+      "title_zh": "查看网络配置",
+      "title_en": "Show network configuration",
+      "category": "network",
+      "risk": "safe",
+      "group": "network_read",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(网络|网卡|IP地址|ip地址|连接|路由)",
+        "\\b(show|check|display).*(network|interface|ip address|route)\\b"
+      ],
+      "commands": [
+        ["nmcli", "device", "status"],
+        ["nmcli", "connection", "show"],
+        ["ip", "-brief", "address"],
+        ["ip", "route"]
+      ],
+      "summary_zh": "读取网卡、连接、IP 地址和默认路由。",
+      "impact_zh": "只读操作，不会影响现有连接。"
+    },
+    {
+      "id": "show_disk",
+      "title_zh": "查看磁盘空间",
+      "title_en": "Show disk usage",
+      "category": "storage",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(磁盘|硬盘|空间|容量|分区)",
+        "\\b(show|check|display).*(disk|storage|space|filesystem)\\b"
+      ],
+      "commands": [["df", "-hT"]],
+      "summary_zh": "读取文件系统容量和挂载点。",
+      "impact_zh": "只读操作，不会修改数据。"
+    },
+    {
+      "id": "show_memory",
+      "title_zh": "查看内存使用",
+      "title_en": "Show memory usage",
+      "category": "system",
+      "risk": "safe",
+      "group": "process_read",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(内存|RAM|交换分区)",
+        "\\b(show|check|display).*(memory|ram|swap)\\b"
+      ],
+      "commands": [["free", "-h"]],
+      "summary_zh": "读取物理内存和交换分区使用情况。",
+      "impact_zh": "只读操作，不会修改系统。"
+    },
+    {
+      "id": "show_failed_services",
+      "title_zh": "查看异常服务",
+      "title_en": "Show failed services",
+      "category": "services",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(服务|systemd).*(异常|失败|故障|错误)",
+        "\\b(show|check|display|list).*(failed|failing).*(services?|units?)\\b"
+      ],
+      "commands": [["systemctl", "--failed", "--no-pager"]],
+      "summary_zh": "列出启动失败或运行异常的服务。",
+      "impact_zh": "只读操作，不会重启或停止服务。"
+    },
+    {
+      "id": "show_processes",
+      "title_zh": "查看高占用进程",
+      "title_en": "Show top processes",
+      "category": "process",
+      "risk": "safe",
+      "group": "process_read",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(进程|CPU|cpu|内存占用)",
+        "\\b(show|check|display|list).*(process|cpu usage|top process)\\b"
+      ],
+      "commands": [["ps", "-eo", "pid,user,comm,%cpu,%mem", "--sort=-%cpu"]],
+      "summary_zh": "按 CPU 占用读取当前进程。",
+      "impact_zh": "只读操作，不会结束进程。"
+    },
+    {
+      "id": "show_firewall",
+      "title_zh": "查看防火墙规则",
+      "title_en": "Show firewall rules",
+      "category": "firewall",
+      "risk": "safe",
+      "group": "firewall_read",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(防火墙|firewall|端口规则)",
+        "\\b(show|check|display).*(firewall|firewalld)\\b"
+      ],
+      "commands": [["firewall-cmd", "--list-all"]],
+      "summary_zh": "读取 firewalld 当前区域的规则。",
+      "impact_zh": "只读操作，不会改动防火墙。"
+    },
+    {
+      "id": "show_selinux",
+      "title_zh": "查看 SELinux 状态",
+      "title_en": "Show SELinux status",
+      "category": "security",
+      "risk": "safe",
+      "group": "selinux_read",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(SELinux|selinux|安全增强)",
+        "\\b(show|check|display).*(selinux|enforcing|permissive)\\b"
+      ],
+      "commands": [["sestatus"]],
+      "summary_zh": "读取 SELinux 当前模式和策略。",
+      "impact_zh": "只读操作，不会切换 SELinux 模式。"
+    },
+    {
+      "id": "show_updates",
+      "title_zh": "查看安全更新",
+      "title_en": "Show security updates",
+      "category": "patch",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(更新|补丁|漏洞修复|安全更新)",
+        "\\b(show|check|display|list).*(update|patch|security update)\\b"
+      ],
+      "commands": [["dnf", "-q", "check-update", "--security"]],
+      "accepted_exit_codes": [0, 100],
+      "summary_zh": "只读查询可用安全更新，不安装软件包。",
+      "impact_zh": "只读操作。首次运行需要读取软件源元数据。"
+    },
+    {
+      "id": "show_listening_ports",
+      "title_zh": "查看监听端口",
+      "title_en": "Show listening ports",
+      "category": "network",
+      "risk": "safe",
+      "group": "connection_read",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(端口|监听|开放服务)",
+        "\\b(show|check|display|list).*(port|listening|socket)\\b"
+      ],
+      "commands": [["ss", "-lntup"]],
+      "summary_zh": "读取正在监听的 TCP/UDP 端口和进程。",
+      "impact_zh": "只读操作，不会开放或关闭端口。"
+    },
+    {
+      "id": "show_users",
+      "title_zh": "查看系统用户",
+      "title_en": "List system users",
+      "category": "account",
+      "risk": "safe",
+      "patterns": [
+        "(查看|列出|显示|检查).*(系统用户|用户列表|账户列表|所有用户|全部用户)",
+        "\\b(show|list|check|display)\\s+(?:(?:all|system)\\s+)?(?:users|accounts)\\b"
+      ],
+      "commands": [["getent", "passwd"]],
+      "summary_zh": "读取本机用户账户列表。",
+      "impact_zh": "只读操作，不会修改账户。"
+    },
+    {
+      "id": "show_logs",
+      "title_zh": "查看错误日志",
+      "title_en": "Show recent error logs",
+      "category": "logs",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(错误日志|系统日志|journal|日志)",
+        "\\b(show|check|display).*(error log|journal|system log)\\b"
+      ],
+      "commands": [["journalctl", "-p", "err", "-n", "50", "--no-pager"]],
+      "summary_zh": "读取最近 50 条错误级别日志。",
+      "impact_zh": "只读操作，不会清理日志。"
+    },
+    {
+      "id": "show_cron",
+      "title_zh": "查看计划任务",
+      "title_en": "Show scheduled jobs",
+      "category": "schedule",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(计划任务|定时任务|cron|crontab)",
+        "\\b(show|list|check|display).*(cron|crontab|scheduled job)\\b"
+      ],
+      "commands": [["ls", "-la", "/etc/cron.d"], ["systemctl", "list-timers", "--all", "--no-pager"]],
+      "summary_zh": "读取系统 cron 目录和 systemd 定时器。",
+      "impact_zh": "只读操作，不会新增或删除计划任务。"
+    },
+    {
+      "id": "show_locale",
+      "title_zh": "查看系统语言",
+      "title_en": "Show system locale",
+      "category": "system",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(语言|locale|字符集)",
+        "\\b(show|check|display).*(locale|language|charset)\\b"
+      ],
+      "commands": [["localectl", "status"]],
+      "summary_zh": "读取当前系统语言和键盘布局。",
+      "impact_zh": "只读操作，不会修改语言。"
+    },
+    {
+      "id": "show_hostname",
+      "title_zh": "查看主机名",
+      "title_en": "Show hostname",
+      "category": "system",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(主机名|hostname)",
+        "\\b(show|check|display).*(hostname|host name)\\b"
+      ],
+      "commands": [["hostnamectl", "status"]],
+      "summary_zh": "读取当前静态主机名和操作系统信息。",
+      "impact_zh": "只读操作，不会修改主机名。"
+    },
+    {
+      "id": "inspect_path",
+      "title_zh": "查看文件或目录",
+      "title_en": "Inspect a file or directory",
+      "category": "filesystem",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|检查).*(文件|目录|路径)",
+        "\\b(inspect|check|show|list).*(\\bfile\\b|\\bdirectory\\b|\\bpath\\b)"
+      ],
+      "params": {
+        "path": {
+          "label_zh": "文件或目录路径",
+          "label_en": "File or directory path",
+          "placeholder": "/etc/ssh/sshd_config",
+          "pattern": "^/[A-Za-z0-9_./+@%:-]{1,220}$",
+          "extractor": "path",
+          "required": true
+        }
+      },
+      "commands": [["ls", "-ld", "--", "{{path}}"]],
+      "summary_zh": "读取指定路径的权限、所有者和类型。",
+      "impact_zh": "只读操作，不会修改文件。"
+    },
+    {
+      "id": "show_ssh_config",
+      "title_zh": "查看 SSH 安全配置",
+      "title_en": "Show effective SSH configuration",
+      "category": "ssh",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(SSH|ssh).*(配置|安全|登录)",
+        "\\b(show|check|display).*(ssh).*(config|settings)\\b"
+      ],
+      "commands": [["sshd", "-T"]],
+      "summary_zh": "读取 sshd 合并后的有效配置。",
+      "impact_zh": "只读操作，不会重启 SSH。"
+    },
+    {
+      "id": "show_route",
+      "title_zh": "查看路由表",
+      "title_en": "Show routing table",
+      "category": "network",
+      "risk": "safe",
+      "patterns": [
+        "(查看|看看|显示|检查|查询).*(路由表|网关|默认路由)",
+        "\\b(show|check|display).*(routing table|gateway|default route)\\b"
+      ],
+      "commands": [["ip", "route"]],
+      "summary_zh": "读取当前路由和默认网关。",
+      "impact_zh": "只读操作，不会改变路由。"
+    },
+    {
+      "id": "set_datetime",
+      "title_zh": "设置系统时间",
+      "title_en": "Set system date and time",
+      "category": "time",
+      "risk": "caution",
+      "patterns": [
+        "(设置|修改|更改|调整|改).*(系统时间|日期|时间).*(为|到|成)?",
+        "(系统时间|日期|时间).*(改成|改为|设置为|设为|调整到|调到)",
+        "\\b(set|change|update).*(system time|date|clock)\\b"
+      ],
+      "params": {
+        "datetime": {
+          "label_zh": "目标时间",
+          "label_en": "Target date and time",
+          "placeholder": "2026-10-23 15:30:00",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}[ T]\\d{2}:\\d{2}(?::\\d{2})?$",
+          "extractor": "datetime",
+          "required": true
+        }
+      },
+      "commands": [["timedatectl", "set-time", "{{datetime}}"]],
+      "post_check": [["timedatectl", "status"]],
+      "summary_zh": "修改系统当前时间。",
+      "impact_zh": "时间跳变可能影响证书校验、日志顺序和定时任务。",
+      "confirmation_phrase": "确认修改时间"
+    },
+    {
+      "id": "set_timezone",
+      "title_zh": "设置系统时区",
+      "title_en": "Set system timezone",
+      "category": "time",
+      "risk": "caution",
+      "patterns": [
+        "(设置|修改|更改|调整|改).*(时区|timezone)",
+        "\\b(set|change|update).*(timezone|time zone)\\b"
+      ],
+      "params": {
+        "timezone": {
+          "label_zh": "IANA 时区",
+          "label_en": "IANA timezone",
+          "placeholder": "Asia/Shanghai",
+          "pattern": "^(UTC|[A-Za-z_+-]+/[A-Za-z0-9_+\\-]+)$",
+          "extractor": "timezone",
+          "required": true
+        }
+      },
+      "commands": [["timedatectl", "set-timezone", "{{timezone}}"]],
+      "post_check": [["timedatectl", "status"]],
+      "summary_zh": "将系统时区切换到指定 IANA 时区。",
+      "impact_zh": "只改变时区，不修改当前 UTC 时间。",
+      "confirmation_phrase": "确认修改时区"
+    },
+    {
+      "id": "enable_ntp",
+      "title_zh": "启用网络时间同步",
+      "title_en": "Enable network time synchronization",
+      "category": "time",
+      "risk": "caution",
+      "patterns": [
+        "(启用|打开|开启|恢复).*(NTP|ntp|时间同步|chrony|chronyd)",
+        "\\b(enable|turn on|start).*(ntp|time sync|chrony)\\b"
+      ],
+      "commands": [["timedatectl", "set-ntp", "true"], ["systemctl", "enable", "--now", "chronyd"]],
+      "post_check": [["timedatectl", "status"]],
+      "summary_zh": "启用 chronyd 和系统 NTP 同步。",
+      "impact_zh": "系统时间会逐步与时间源同步。",
+      "confirmation_phrase": "确认启用时间同步"
+    },
+    {
+      "id": "disable_ntp",
+      "title_zh": "关闭网络时间同步",
+      "title_en": "Disable network time synchronization",
+      "category": "time",
+      "risk": "destructive",
+      "patterns": [
+        "(关闭|停用|禁用).*(NTP|ntp|时间同步|chrony|chronyd)",
+        "\\b(disable|turn off|stop).*(ntp|time sync|chrony)\\b"
+      ],
+      "commands": [["timedatectl", "set-ntp", "false"]],
+      "post_check": [["timedatectl", "status"]],
+      "summary_zh": "关闭自动时间同步，允许手动设置时间。",
+      "impact_zh": "系统时间将不再自动校准，可能造成时间漂移。",
+      "confirmation_phrase": "确认关闭时间同步"
+    },
+    {
+      "id": "set_static_ipv4",
+      "title_zh": "设置静态 IPv4 地址",
+      "title_en": "Configure a static IPv4 address",
+      "category": "network",
+      "risk": "destructive",
+      "group": "network_address",
+      "priority": 10,
+      "patterns": [
+        "(设置|修改|更改|配置|改).*(静态|固定)?.*(IP|ip|网络地址|网卡地址|地址)",
+        "(IP|ip|IPv4|ipv4|网络地址|网卡地址).*(改成|改为|设置为|设为|配置为)",
+        "\\b(set|change|configure).*(static )?(ip address|network address|ipv4|ip)\\b",
+        "\\b(ip address|network address|ipv4).*(to|as)\\b"
+      ],
+      "params": {
+        "connection": {
+          "label_zh": "NetworkManager 连接名",
+          "label_en": "NetworkManager connection",
+          "placeholder": "ens160",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "connection",
+          "required": true
+        },
+        "address": {
+          "label_zh": "IPv4 地址/掩码",
+          "label_en": "IPv4 address/prefix",
+          "placeholder": "192.168.1.50/24",
+          "pattern": "^(?:\\d{1,3}\\.){3}\\d{1,3}/\\d{1,2}$",
+          "extractor": "ipv4_cidr",
+          "required": true
+        },
+        "gateway": {
+          "label_zh": "默认网关",
+          "label_en": "Default gateway",
+          "placeholder": "192.168.1.1",
+          "pattern": "^(?:\\d{1,3}\\.){3}\\d{1,3}$",
+          "extractor": "gateway",
+          "required": true
+        },
+        "dns": {
+          "label_zh": "DNS 服务器",
+          "label_en": "DNS server",
+          "placeholder": "223.5.5.5",
+          "pattern": "^(?:\\d{1,3}\\.){3}\\d{1,3}$",
+          "extractor": "dns",
+          "required": true
+        }
+      },
+      "commands": [
+        ["nmcli", "connection", "modify", "{{connection}}", "ipv4.method", "manual", "ipv4.addresses", "{{address}}", "ipv4.gateway", "{{gateway}}", "ipv4.dns", "{{dns}}"],
+        ["nmcli", "connection", "up", "{{connection}}"]
+      ],
+      "post_check": [["nmcli", "connection", "show", "{{connection}}"]],
+      "summary_zh": "通过 NetworkManager 设置静态 IPv4、网关和 DNS，并重新激活连接。",
+      "impact_zh": "网络会短暂中断；如果当前通过 SSH 连接，修改后连接可能立即断开。",
+      "confirmation_phrase": "确认修改网络",
+      "requires_restart": false,
+      "network_disconnect": true
+    },
+    {
+      "id": "set_dhcp",
+      "title_zh": "切换为 DHCP",
+      "title_en": "Switch connection to DHCP",
+      "category": "network",
+      "risk": "destructive",
+      "group": "network_address",
+      "priority": 8,
+      "patterns": [
+        "(设置|修改|更改|切换|改).*(DHCP|dhcp|自动获取地址)",
+        "\\b(set|switch|change).*(dhcp|automatic address)\\b"
+      ],
+      "params": {
+        "connection": {
+          "label_zh": "NetworkManager 连接名",
+          "label_en": "NetworkManager connection",
+          "placeholder": "ens160",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "connection",
+          "required": true
+        }
+      },
+      "commands": [
+        ["nmcli", "connection", "modify", "{{connection}}", "ipv4.method", "auto", "ipv4.addresses", "", "ipv4.gateway", "", "ipv4.dns", ""],
+        ["nmcli", "connection", "up", "{{connection}}"]
+      ],
+      "post_check": [["nmcli", "connection", "show", "{{connection}}"]],
+      "summary_zh": "让指定连接通过 DHCP 自动获取网络参数。",
+      "impact_zh": "网络会重新获取地址，现有 SSH 会话可能中断。",
+      "confirmation_phrase": "确认切换 DHCP",
+      "network_disconnect": true
+    },
+    {
+      "id": "set_dns",
+      "title_zh": "修改连接 DNS",
+      "title_en": "Change connection DNS",
+      "category": "network",
+      "risk": "caution",
+      "group": "network_address",
+      "priority": 1,
+      "patterns": [
+        "(设置|修改|更改|配置|改).*(DNS|dns|域名解析)",
+        "\\b(set|change|configure).*(dns|nameserver)\\b"
+      ],
+      "params": {
+        "connection": {
+          "label_zh": "NetworkManager 连接名",
+          "label_en": "NetworkManager connection",
+          "placeholder": "ens160",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "connection",
+          "required": true
+        },
+        "dns": {
+          "label_zh": "DNS 服务器",
+          "label_en": "DNS server",
+          "placeholder": "223.5.5.5",
+          "pattern": "^(?:\\d{1,3}\\.){3}\\d{1,3}$",
+          "extractor": "dns",
+          "required": true
+        }
+      },
+      "commands": [
+        ["nmcli", "connection", "modify", "{{connection}}", "ipv4.dns", "{{dns}}"],
+        ["nmcli", "connection", "up", "{{connection}}"]
+      ],
+      "post_check": [["nmcli", "connection", "show", "{{connection}}"]],
+      "summary_zh": "更新指定 NetworkManager 连接的 DNS。",
+      "impact_zh": "依赖域名解析的程序在连接重载时可能短暂失败。",
+      "confirmation_phrase": "确认修改 DNS",
+      "network_disconnect": true
+    },
+    {
+      "id": "set_hostname",
+      "title_zh": "设置主机名",
+      "title_en": "Set hostname",
+      "category": "system",
+      "risk": "caution",
+      "patterns": [
+        "(设置|修改|更改|改).*(主机名|hostname)",
+        "\\b(set|change).*(hostname|host name)\\b"
+      ],
+      "params": {
+        "hostname": {
+          "label_zh": "新主机名",
+          "label_en": "New hostname",
+          "placeholder": "web-prod-01",
+          "pattern": "^[A-Za-z0-9](?:[A-Za-z0-9.-]{0,61}[A-Za-z0-9])?$",
+          "extractor": "hostname",
+          "required": true
+        }
+      },
+      "commands": [["hostnamectl", "set-hostname", "{{hostname}}"]],
+      "post_check": [["hostnamectl", "status"]],
+      "summary_zh": "设置系统静态主机名。",
+      "impact_zh": "依赖旧主机名的证书、监控标签或应用配置可能需要同步更新。",
+      "confirmation_phrase": "确认修改主机名"
+    },
+    {
+      "id": "set_locale_zh",
+      "title_zh": "切换系统语言为中文",
+      "title_en": "Switch system locale to Chinese",
+      "category": "system",
+      "risk": "caution",
+      "patterns": [
+        "(设置|修改|更改|切换|改).*(语言).*(中文|汉语|简体)",
+        "(设置|修改|更改|切换|改).*(中文|汉语|简体).*(语言|locale|字符集)",
+        "(系统语言|语言).*(改成|改为|设置为|设为|切换为).*(中文|汉语|简体)",
+        "\\b(set|change|switch).*(locale|language).*(chinese|zh_cn|zh-cn)\\b"
+      ],
+      "commands": [["localectl", "set-locale", "LANG=zh_CN.UTF-8"]],
+      "post_check": [["localectl", "status"]],
+      "summary_zh": "将系统默认语言设置为简体中文 UTF-8。",
+      "impact_zh": "新登录会话和部分服务会使用中文环境；当前会话不会立即改变。",
+      "confirmation_phrase": "确认修改语言",
+      "requires_restart": true,
+      "restart_reason_zh": "系统级语言环境通常需要重新登录；为确保所有服务和图形会话生效，建议重启。"
+    },
+    {
+      "id": "set_locale_en",
+      "title_zh": "切换系统语言为英文",
+      "title_en": "Switch system locale to English",
+      "category": "system",
+      "risk": "caution",
+      "patterns": [
+        "(设置|修改|更改|切换|改).*(语言).*(英文|英语)",
+        "(设置|修改|更改|切换|改).*(英文|英语).*(语言|locale|字符集)",
+        "(系统语言|语言).*(改成|改为|设置为|设为|切换为).*(英文|英语)",
+        "\\b(set|change|switch).*(locale|language).*(english|en_us|en-us)\\b"
+      ],
+      "commands": [["localectl", "set-locale", "LANG=en_US.UTF-8"]],
+      "post_check": [["localectl", "status"]],
+      "summary_zh": "将系统默认语言设置为英文 UTF-8。",
+      "impact_zh": "新登录会话和部分服务会使用英文环境；当前会话不会立即改变。",
+      "confirmation_phrase": "确认修改语言",
+      "requires_restart": true,
+      "restart_reason_zh": "系统级语言环境通常需要重新登录；为确保所有服务和图形会话生效，建议重启。"
+    },
+    {
+      "id": "open_firewall_port",
+      "title_zh": "开放防火墙端口",
+      "title_en": "Open a firewall port",
+      "category": "firewall",
+      "risk": "caution",
+      "patterns": [
+        "(开放|放行|允许).*(端口|port)",
+        "\\b(open|allow|permit).*(firewall )?port\\b"
+      ],
+      "params": {
+        "port": {
+          "label_zh": "端口",
+          "label_en": "Port",
+          "placeholder": "8080",
+          "pattern": "^[1-9][0-9]{0,4}$",
+          "extractor": "port",
+          "required": true
+        },
+        "protocol": {
+          "label_zh": "协议",
+          "label_en": "Protocol",
+          "placeholder": "tcp",
+          "pattern": "^(tcp|udp)$",
+          "extractor": "protocol",
+          "default": "tcp",
+          "required": true
+        }
+      },
+      "commands": [
+        ["firewall-cmd", "--permanent", "--add-port={{port}}/{{protocol}}"],
+        ["firewall-cmd", "--reload"]
+      ],
+      "post_check": [["firewall-cmd", "--list-ports"]],
+      "summary_zh": "在 firewalld 中永久开放指定 TCP/UDP 端口。",
+      "impact_zh": "会增加对应端口的网络可达性。",
+      "confirmation_phrase": "确认开放端口"
+    },
+    {
+      "id": "close_firewall_port",
+      "title_zh": "关闭防火墙端口",
+      "title_en": "Close a firewall port",
+      "category": "firewall",
+      "risk": "destructive",
+      "patterns": [
+        "(关闭|禁用|拒绝|移除).*(防火墙)?.*(端口|port)",
+        "\\b(close|disable|block|remove).*(firewall )?port\\b"
+      ],
+      "params": {
+        "port": {
+          "label_zh": "端口",
+          "label_en": "Port",
+          "placeholder": "8080",
+          "pattern": "^[1-9][0-9]{0,4}$",
+          "extractor": "port",
+          "required": true
+        },
+        "protocol": {
+          "label_zh": "协议",
+          "label_en": "Protocol",
+          "placeholder": "tcp",
+          "pattern": "^(tcp|udp)$",
+          "extractor": "protocol",
+          "default": "tcp",
+          "required": true
+        }
+      },
+      "commands": [
+        ["firewall-cmd", "--permanent", "--remove-port={{port}}/{{protocol}}"],
+        ["firewall-cmd", "--reload"]
+      ],
+      "post_check": [["firewall-cmd", "--list-ports"]],
+      "summary_zh": "从 firewalld 永久移除指定端口规则。",
+      "impact_zh": "现有业务连接可能被中断。",
+      "confirmation_phrase": "确认关闭端口"
+    },
+    {
+      "id": "restart_service",
+      "title_zh": "重启系统服务",
+      "title_en": "Restart a service",
+      "category": "services",
+      "risk": "caution",
+      "patterns": [
+        "(重启|重新启动).*(服务|service|进程)",
+        "\\b(restart|reload).*(service|unit)\\b"
+      ],
+      "params": {
+        "service": {
+          "label_zh": "服务名",
+          "label_en": "Service name",
+          "placeholder": "sshd",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "service",
+          "required": true
+        }
+      },
+      "commands": [
+        ["systemctl", "restart", "{{service}}"],
+        ["systemctl", "is-active", "{{service}}"]
+      ],
+      "summary_zh": "重启指定 systemd 服务并检查状态。",
+      "impact_zh": "服务会短暂中断，依赖该服务的业务会受到影响。",
+      "confirmation_phrase": "确认重启服务",
+      "network_disconnect_if": "sshd"
+    },
+    {
+      "id": "enable_service",
+      "title_zh": "启用并启动服务",
+      "title_en": "Enable and start a service",
+      "category": "services",
+      "risk": "caution",
+      "patterns": [
+        "(启用|开启|打开).*(服务|service|开机自启)",
+        "\\b(enable).*(service|unit|boot)\\b"
+      ],
+      "params": {
+        "service": {
+          "label_zh": "服务名",
+          "label_en": "Service name",
+          "placeholder": "firewalld",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "service",
+          "required": true
+        }
+      },
+      "commands": [["systemctl", "enable", "--now", "{{service}}"]],
+      "post_check": [["systemctl", "is-active", "{{service}}"]],
+      "summary_zh": "设置指定服务开机自启并立即启动。",
+      "impact_zh": "新服务开始运行，并可能开放新的端口或占用资源。",
+      "confirmation_phrase": "确认启动服务"
+    },
+    {
+      "id": "disable_service",
+      "title_zh": "停止并禁用服务",
+      "title_en": "Stop and disable a service",
+      "category": "services",
+      "risk": "destructive",
+      "patterns": [
+        "(停止并禁用|禁用).*(服务|service)",
+        "\\b(disable|stop\\s+and\\s+disable).*(service|unit)\\b"
+      ],
+      "params": {
+        "service": {
+          "label_zh": "服务名",
+          "label_en": "Service name",
+          "placeholder": "firewalld",
+          "pattern": "^[A-Za-z0-9_.@:-]{1,64}$",
+          "extractor": "service",
+          "required": true
+        }
+      },
+      "commands": [["systemctl", "disable", "--now", "{{service}}"]],
+      "post_check": [["systemctl", "is-active", "{{service}}"]],
+      "summary_zh": "立即停止服务并取消开机自启。",
+      "impact_zh": "依赖该服务的功能会中断，安全服务停止后可能扩大暴露面。",
+      "confirmation_phrase": "确认停止服务",
+      "network_disconnect_if": "sshd"
+    },
+    {
+      "id": "install_package",
+      "title_zh": "安装软件包",
+      "title_en": "Install a package",
+      "category": "package",
+      "risk": "caution",
+      "patterns": [
+        "(安装|装上).*(软件包|软件|工具|包)",
+        "\\b(install|add).*(package|software|tool)\\b"
+      ],
+      "params": {
+        "package": {
+          "label_zh": "软件包名",
+          "label_en": "Package name",
+          "placeholder": "httpd",
+          "pattern": "^[A-Za-z0-9_.+-]{1,100}$",
+          "extractor": "package",
+          "required": true
+        }
+      },
+      "commands": [["dnf", "install", "-y", "{{package}}"]],
+      "summary_zh": "通过 dnf 安装指定软件包。",
+      "impact_zh": "会写入软件包数据库并可能启动服务。",
+      "confirmation_phrase": "确认安装软件包"
+    },
+    {
+      "id": "remove_package",
+      "title_zh": "卸载软件包",
+      "title_en": "Remove a package",
+      "category": "package",
+      "risk": "destructive",
+      "patterns": [
+        "(卸载|删除|移除).*(软件包|软件|工具|包)",
+        "\\b(remove|uninstall|erase).*(package|software)\\b"
+      ],
+      "params": {
+        "package": {
+          "label_zh": "软件包名",
+          "label_en": "Package name",
+          "placeholder": "telnet-server",
+          "pattern": "^[A-Za-z0-9_.+-]{1,100}$",
+          "extractor": "package",
+          "required": true
+        }
+      },
+      "commands": [["dnf", "remove", "-y", "{{package}}"]],
+      "summary_zh": "卸载指定软件包及其可移除依赖。",
+      "impact_zh": "可能同时移除依赖该软件包的业务组件。",
+      "confirmation_phrase": "确认卸载软件包"
+    },
+    {
+      "id": "update_security",
+      "title_zh": "安装安全更新",
+      "title_en": "Install security updates",
+      "category": "patch",
+      "risk": "caution",
+      "patterns": [
+        "(安装|应用|执行|更新).*(安全更新|安全补丁|漏洞修复)",
+        "\\b(install|apply|run).*(security update|security patch)\\b"
+      ],
+      "commands": [["dnf", "update", "--security", "-y"]],
+      "summary_zh": "安装仓库中所有可用的安全更新。",
+      "impact_zh": "可能升级内核或关键运行库，部分更新需要重启才能生效。",
+      "confirmation_phrase": "确认安装安全更新",
+      "requires_restart": true,
+      "restart_reason_zh": "如果本次升级包含内核、glibc 或 systemd，需要重启才能完成生效。"
+    },
+    {
+      "id": "create_user",
+      "title_zh": "创建系统用户",
+      "title_en": "Create a user",
+      "category": "account",
+      "risk": "caution",
+      "patterns": [
+        "(创建|新增).*(用户|账号|账户)",
+        "\\b(create|add)\\s+(?:a\\s+)?(?:user|account)\\b(?!.*\\bgroup\\b)"
+      ],
+      "params": {
+        "username": {
+          "label_zh": "用户名",
+          "label_en": "Username",
+          "placeholder": "deploy",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "username",
+          "required": true
+        }
+      },
+      "commands": [["useradd", "--", "{{username}}"], ["id", "{{username}}"]],
+      "summary_zh": "创建一个默认处于锁定密码状态的新用户。",
+      "impact_zh": "新增账户需要后续设置密码或 SSH 密钥才能登录。",
+      "confirmation_phrase": "确认创建用户"
+    },
+    {
+      "id": "lock_user",
+      "title_zh": "锁定用户账户",
+      "title_en": "Lock a user account",
+      "category": "account",
+      "risk": "destructive",
+      "patterns": [
+        "(锁定|禁用|冻结).*(用户|账号|账户)",
+        "\\b(lock|disable).*(user|account)\\b"
+      ],
+      "params": {
+        "username": {
+          "label_zh": "用户名",
+          "label_en": "Username",
+          "placeholder": "alice",
+          "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+          "extractor": "username",
+          "required": true
+        }
+      },
+      "commands": [["usermod", "-L", "{{username}}"], ["passwd", "-S", "{{username}}"]],
+      "summary_zh": "锁定指定用户密码认证。",
+      "impact_zh": "该用户无法继续通过密码登录，现有会话不一定立即退出。",
+      "confirmation_phrase": "确认锁定用户"
+    },
+    {
+      "id": "create_directory",
+      "title_zh": "创建目录",
+      "title_en": "Create a directory",
+      "category": "filesystem",
+      "risk": "caution",
+      "patterns": [
+        "(创建|新建|建立).*(目录|文件夹)",
+        "\\b(create|make).*(directory|folder)\\b"
+      ],
+      "params": {
+        "path": {
+          "label_zh": "目录路径",
+          "label_en": "Directory path",
+          "placeholder": "/var/www/example",
+          "pattern": "^/[A-Za-z0-9_./+@%:-]{1,220}$",
+          "extractor": "path",
+          "required": true
+        }
+      },
+      "commands": [["mkdir", "-p", "--", "{{path}}"], ["ls", "-ld", "--", "{{path}}"]],
+      "summary_zh": "创建目录，已存在时不报错。",
+      "impact_zh": "会在指定路径写入目录。",
+      "confirmation_phrase": "确认创建目录"
+    },
+    {
+      "id": "delete_path",
+      "title_zh": "删除文件或目录",
+      "title_en": "Delete a file or directory",
+      "category": "filesystem",
+      "risk": "destructive",
+      "patterns": [
+        "(删除|删掉|移除|清理).*(文件|目录|文件夹|路径)",
+        "(删除|删掉|移除|清理)\\s+/[^\\s]+",
+        "\\b(delete|remove|erase).*(file|directory|folder|path)\\b",
+        "\\b(delete|remove|erase)\\s+/[^\\s]+",
+        "\\brm\\s+(?:-[A-Za-z]+\\s+)*"
+      ],
+      "params": {
+        "path": {
+          "label_zh": "要删除的路径",
+          "label_en": "Path to delete",
+          "placeholder": "/var/tmp/example",
+          "pattern": "^/[A-Za-z0-9_./+@%:-]{1,220}$",
+          "extractor": "path",
+          "required": true
+        }
+      },
+      "commands": [["rm", "-rf", "--", "{{path}}"]],
+      "summary_zh": "递归删除指定路径。",
+      "impact_zh": "删除后无法通过系统回收站恢复，也不会自动备份。",
+      "confirmation_phrase": "确认删除文件",
+      "no_restart": true
+    },
+    {
+      "id": "reboot",
+      "title_zh": "重启系统",
+      "title_en": "Reboot the system",
+      "category": "power",
+      "risk": "destructive",
+      "patterns": [
+        "(重启|重新启动|reboot).*(系统|服务器|主机|机器)?",
+        "\\b(reboot|restart).*(system|server|host|machine)\\b",
+        "^(重启|reboot)$"
+      ],
+      "commands": [["shutdown", "-r", "+1", "RHEL Ops Agent: confirmed restart"]],
+      "summary_zh": "安排系统在 1 分钟后重启。",
+      "impact_zh": "所有用户会话和业务会中断；未保存的数据可能丢失。",
+      "confirmation_phrase": "确认重启",
+      "requires_restart": false
+    },
+    {
+      "id": "poweroff",
+      "title_zh": "关闭系统电源",
+      "title_en": "Power off the system",
+      "category": "power",
+      "risk": "destructive",
+      "patterns": [
+        "(关机|关闭系统|断电).*",
+        "\\b(poweroff|power off|shut down|shutdown now)\\b"
+      ],
+      "commands": [["shutdown", "-h", "+1", "RHEL Ops Agent: confirmed shutdown"]],
+      "summary_zh": "安排系统在 1 分钟后关机。",
+      "impact_zh": "所有服务和远程连接会中断，需要通过控制台或电源操作重新启动。",
+      "confirmation_phrase": "确认关机"
+    },
+    {
+      "id": "kill_process",
+      "title_zh": "结束指定进程",
+      "title_en": "Terminate a process",
+      "category": "process",
+      "risk": "destructive",
+      "patterns": [
+        "(结束|杀掉|终止|kill).*(进程|PID|pid)",
+        "\\b(kill|terminate).*(process|pid)\\b"
+      ],
+      "params": {
+        "pid": {
+          "label_zh": "进程 PID",
+          "label_en": "Process PID",
+          "placeholder": "12345",
+          "pattern": "^[1-9][0-9]{0,6}$",
+          "extractor": "pid",
+          "required": true
+        }
+      },
+      "commands": [["kill", "-TERM", "{{pid}}"]],
+      "post_check": [["ps", "-p", "{{pid}}", "-o", "pid,user,comm,stat"]],
+      "summary_zh": "向指定进程发送 TERM 信号。",
+      "impact_zh": "进程会被要求正常退出，未保存的工作可能丢失。",
+      "confirmation_phrase": "确认结束进程"
+    }
+  ],
+  "blocked_patterns": [
+    {
+      "id": "blocked_delete_root",
+      "title_zh": "删除系统根目录",
+      "title_en": "Delete the filesystem root",
+      "severity": "critical",
+      "patterns": [
+        "\\brm\\s+-[A-Za-z]*r[A-Za-z]*f?[A-Za-z]*\\s+/(?:\\s|$|\\*)",
+        "\\brm\\s+-[A-Za-z]*f[A-Za-z]*r[A-Za-z]*\\s+/(?:\\s|$|\\*)"
+      ],
+      "reason_zh": "根目录删除会立即破坏整个系统，Agent 不允许执行。",
+      "reason_en": "Deleting the filesystem root would destroy the host."
+    },
+    {
+      "id": "blocked_disk_wipe",
+      "title_zh": "格式化或覆写磁盘",
+      "title_en": "Format or overwrite a block device",
+      "severity": "critical",
+      "patterns": [
+        "\\bmkfs(?:\\.[A-Za-z0-9]+)?\\s+",
+        "\\bdd\\s+.*\\bof=/dev/(?:sd|nvme|vd|hd|mapper)",
+        "\\bwipefs\\s+-[A-Za-z]*a"
+      ],
+      "reason_zh": "该操作会破坏文件系统或块设备数据，Agent 不允许执行。",
+      "reason_en": "This operation can destroy filesystem or block-device data."
+    },
+    {
+      "id": "blocked_fork_bomb",
+      "title_zh": "进程炸弹",
+      "title_en": "Fork bomb",
+      "severity": "critical",
+      "patterns": [
+        ":\\s*\\(\\s*\\)\\s*\\{\\s*:\\s*\\|\\s*:\\s*&\\s*\\}\\s*;\\s*:"
+      ],
+      "reason_zh": "该模式会耗尽进程资源并拖垮主机。",
+      "reason_en": "This pattern exhausts process resources."
+    },
+    {
+      "id": "blocked_disable_selinux",
+      "title_zh": "关闭 SELinux",
+      "title_en": "Disable SELinux",
+      "severity": "high",
+      "patterns": [
+        "\\bsetenforce\\s+0\\b",
+        "\\bselinux=disabled\\b",
+        "\\bSELINUX\\s*=\\s*disabled\\b"
+      ],
+      "reason_zh": "降低主机安全边界不属于受支持的自动操作，请使用受控变更流程。",
+      "reason_en": "Disabling SELinux is not an allowed automated operation."
+    },
+    {
+      "id": "blocked_flush_firewall",
+      "title_zh": "清空防火墙规则",
+      "title_en": "Flush firewall rules",
+      "severity": "high",
+      "patterns": [
+        "\\biptables\\s+-F\\b",
+        "\\bnft\\s+flush\\s+ruleset\\b",
+        "\\bfirewall-cmd\\s+--panic-on\\b"
+      ],
+      "reason_zh": "清空或隔离防火墙会扩大攻击面，Agent 不允许自动执行。",
+      "reason_en": "Flushing the firewall can expose services unexpectedly."
+    },
+    {
+      "id": "blocked_pipe_shell",
+      "title_zh": "从网络直接执行脚本",
+      "title_en": "Pipe a remote script into a shell",
+      "severity": "high",
+      "patterns": [
+        "\\b(?:curl|wget)\\b[^\\n|]*\\|\\s*(?:ba|z|k)?sh\\b",
+        "\\b(?:curl|wget)\\b[^\\n|]*\\|\\s*python[0-9.]*\\b"
+      ],
+      "reason_zh": "远程内容未经校验直接执行，来源和内容都无法确认。",
+      "reason_en": "Remote content would be executed without verification."
+    },
+    {
+      "id": "blocked_crontab_clear",
+      "title_zh": "清空计划任务",
+      "title_en": "Remove all scheduled jobs",
+      "severity": "high",
+      "patterns": [
+        "\\bcrontab\\s+-r\\b",
+        "\\brm\\s+-[A-Za-z]*rf?\\s+/var/spool/cron\\b"
+      ],
+      "reason_zh": "清空计划任务可能破坏备份、监控和业务作业。",
+      "reason_en": "Removing all scheduled jobs can break backup and monitoring."
+    }
+  ]
+}

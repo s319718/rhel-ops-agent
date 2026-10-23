@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "patterns": [
+    {
+      "id": "fork_bomb",
+      "title_zh": "疑似 Fork Bomb 资源耗尽攻击",
+      "title_en": "Possible fork bomb resource-exhaustion attack",
+      "severity": "critical",
+      "patterns": [
+        ":\\(\\)\\s*\\{\\s*:\\s*\\|\\s*:\\s*&\\s*\\}\\s*;\\s*:",
+        "\\b(?:bash|sh)\\s+-c\\s+['\"]?:\\(\\)\\s*\\{"
+      ]
+    },
+    {
+      "id": "network_scanner",
+      "title_zh": "疑似网络扫描工具调用",
+      "title_en": "Possible network scanning tool",
+      "severity": "high",
+      "patterns": [
+        "\\b(?:nmap|masscan|zmap)\\b"
+      ]
+    },
+    {
+      "id": "credential_bruteforce",
+      "title_zh": "疑似口令爆破工具调用",
+      "title_en": "Possible credential brute-force tool",
+      "severity": "critical",
+      "patterns": [
+        "\\b(?:hydra|medusa|patator|crowbar)\\b"
+      ]
+    },
+    {
+      "id": "netcat_shell",
+      "title_zh": "疑似 Netcat 反弹 Shell 或命令通道",
+      "title_en": "Possible netcat reverse shell or command channel",
+      "severity": "critical",
+      "patterns": [
+        "\\b(?:nc|ncat)\\b[^\\n]*\\s-(?:e|c)\\s",
+        "\\bncat\\b[^\\n]*--(?:exec|sh-exec)\\b"
+      ]
+    },
+    {
+      "id": "wget_pipe_shell",
+      "title_zh": "远程下载内容直接交给 Shell",
+      "title_en": "Remote download piped directly to a shell",
+      "severity": "critical",
+      "patterns": [
+        "\\bwget\\b[^\\n|]*\\|\\s*(?:ba|z|k)?sh\\b"
+      ]
+    },
+    {
+      "id": "base64_pipe_shell",
+      "title_zh": "Base64 解码后直接执行 Shell 代码",
+      "title_en": "Base64-decoded content piped to a shell",
+      "severity": "critical",
+      "patterns": [
+        "\\bbase64\\s+(?:-d|--decode)\\b[^\\n|]*\\|\\s*(?:ba|z|k)?sh\\b"
+      ]
+    },
+    {
+      "id": "gpgcheck_bypass",
+      "title_zh": "绕过 RPM 软件包签名校验",
+      "title_en": "RPM package signature verification bypass",
+      "severity": "high",
+      "patterns": [
+        "\\b(?:dnf|yum)\\b[^\\n]*--nogpgcheck\\b"
+      ]
+    },
+    {
+      "id": "stop_network_manager",
+      "title_zh": "停止 NetworkManager 可能导致全网断连",
+      "title_en": "Stopping NetworkManager may disconnect all networking",
+      "severity": "critical",
+      "patterns": [
+        "\\bsystemctl\\s+(?:stop|disable\\s+--now)\\s+(?:NetworkManager|network)\\b"
+      ]
+    },
+    {
+      "id": "truncate_security_logs",
+      "title_zh": "疑似清空或截断系统安全日志",
+      "title_en": "Possible security log truncation",
+      "severity": "critical",
+      "patterns": [
+        "\\btruncate\\s+-s\\s+0\\s+/var/log/",
+        ":\\s*>\\s*/var/log/"
+      ]
+    },
+    {
+      "id": "kernel_module_loaded",
+      "title_zh": "动态加载未知内核模块",
+      "title_en": "Kernel module loaded at runtime",
+      "severity": "high",
+      "patterns": [
+        "\\b(?:insmod|modprobe)\\s+\\S+"
+      ]
+    },
+    {
+      "id": "crypto_miner",
+      "title_zh": "疑似加密货币挖矿进程或矿池连接",
+      "title_en": "Possible cryptocurrency miner or mining pool",
+      "severity": "high",
+      "patterns": [
+        "\\b(?:xmrig|cpuminer|minerd)\\b",
+        "stratum\\+tcp://"
+      ]
+    },
+    {
+      "id": "remove_root_password",
+      "title_zh": "尝试删除 root 密码",
+      "title_en": "Attempt to remove the root password",
+      "severity": "critical",
+      "patterns": [
+        "\\bpasswd\\s+-d\\s+root\\b"
+      ]
+    },
+    {
+      "id": "uid_zero_useradd",
+      "title_zh": "创建 UID 0 特权账户",
+      "title_en": "Creation of a UID 0 privileged account",
+      "severity": "critical",
+      "patterns": [
+        "\\buseradd\\b[^\\n]*(?:-o\\b[^\\n]*-u\\s*0|-u\\s*0\\b)"
+      ]
+    }
+  ]
+}
