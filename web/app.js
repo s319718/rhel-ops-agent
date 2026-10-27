@@ -518,6 +518,20 @@ function renderPlanResponse(message, data, overrides) {
     loadAudit().catch(() => {});
     return;
   }
+  if (plan.status === "escalate") {
+    const incident = plan.incident || {};
+    const steps = localizedPick(language, incident.steps_zh || [], incident.steps_en || []);
+    const title = localizedPick(language, incident.title_zh, incident.title_en);
+    appendChat("assistant", `
+      <div class="blocked-panel">
+        <div class="blocked-title">${icon("alert")} ${escapeHtml(title || "")}</div>
+        <p>${escapeHtml(plan.message || "")}</p>
+        <ol>${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ol>
+        <p class="muted">${localizedPick(language, "没有执行任何命令。", "No command was executed.")}</p>
+      </div>`);
+    loadAudit().catch(() => {});
+    return;
+  }
   if (plan.status === "unsupported") {
     const suggestions = (plan.suggestions || []).map((item) => `
       <button class="quick-chip" data-prompt="${escapeHtml(item)}">${escapeHtml(item)}</button>

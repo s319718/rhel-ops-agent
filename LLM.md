@@ -31,14 +31,14 @@ http://127.0.0.1:11434
 
 不建议使用不能稳定返回 `tool_calls` 的旧模型或纯聊天模型。
 
-## 方式一：直接调用 Qwen API
+## 方式一：直接调用智谱 GLM
 
-先在阿里云百炼 / DashScope 创建 API Key：
+先在智谱开放平台（<https://open.bigmodel.cn/>）创建 API Key：
 
 ```bash
 cd rhel-ops-agent
 sudo bash install.sh
-sudo bash scripts/setup-qwen-api.sh
+sudo bash scripts/setup-glm-api.sh
 sudo rhel-agent llm-test
 ```
 
@@ -46,21 +46,24 @@ sudo rhel-agent llm-test
 
 ```text
 RHEL_OPS_LLM_ENABLED=1
-RHEL_OPS_LLM_MODE=hybrid
-RHEL_OPS_LLM_PROVIDER=qwen
-RHEL_OPS_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-RHEL_OPS_LLM_MODEL=qwen-plus
+RHEL_OPS_LLM_MODE=llm_first
+RHEL_OPS_LLM_PROVIDER=openai-compatible
+RHEL_OPS_LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+RHEL_OPS_LLM_MODEL=glm-4-plus
+RHEL_OPS_LLM_STRUCTURED_OUTPUT=0
 ```
 
 API Key 不写入代码、不返回 Web、不进入日志，文件权限为 `0600`。
 
+> 阿里云 DashScope / Qwen 仍可用：`sudo bash scripts/setup-qwen-api.sh`，并把 `RHEL_OPS_LLM_PROVIDER` 设为 `qwen`。
+
 ## Windows 本地测试
 
-Windows 可以真实调用 Qwen API，同时保持 Linux 命令为演示模式：
+Windows 可以真实调用智谱 GLM，同时保持 Linux 命令为演示模式：
 
 ```text
-1. 双击 setup-qwen-windows.bat
-2. 输入 DashScope API Key
+1. 双击 setup-glm-windows.bat
+2. 输入智谱 GLM API Key
 3. 双击 start-windows.bat
 ```
 
@@ -93,7 +96,7 @@ ollama list
 
 ```bash
 RHEL_OPS_LLM_ENABLED=1
-RHEL_OPS_LLM_MODE=hybrid
+RHEL_OPS_LLM_MODE=llm_first
 RHEL_OPS_LLM_PROVIDER=qwen
 RHEL_OPS_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 RHEL_OPS_LLM_MODEL=qwen-plus
@@ -107,14 +110,33 @@ RHEL_OPS_LLM_MAX_ACTIONS=6
 `RHEL_OPS_LLM_MODE`：
 
 - `off`：关闭。
+- `llm_first`：默认。模型先规划，规则引擎校验并兜底。
 - `hybrid`：规则优先，未命中或缺少参数时调用模型。
-- `always`：本地硬拦截后优先使用模型，失败回退规则。
+- `always`：同 `llm_first`（旧名，兼容保留）。
+
+非操作类输入（例如「哦哦」「不是」）会走自由回复通道：模型只生成展示文本，不会生成或执行任何命令。
+
+模型还会先分类 `intent`：`operate` / `advice` / `emergency`。只有 `operate` 允许返回操作；`emergency` 会升级为应急提示，不生成计划。
+
+## 智谱 GLM
+
+```bash
+RHEL_OPS_LLM_ENABLED=1
+RHEL_OPS_LLM_MODE=llm_first
+RHEL_OPS_LLM_PROVIDER=openai-compatible
+RHEL_OPS_LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+RHEL_OPS_LLM_MODEL=glm-4-plus
+RHEL_OPS_LLM_API_KEY=<id>.<secret>
+RHEL_OPS_LLM_STRUCTURED_OUTPUT=0
+```
+
+GLM 的 `tool_choice` 需要用 `auto`（项目按 `bigmodel.cn` 自动识别）；`glm-4-flash` 在完整工具 schema 下可能不返回 `tool_calls`，推荐 `glm-4-plus`。
 
 ## OpenAI 兼容服务
 
 ```bash
 RHEL_OPS_LLM_ENABLED=1
-RHEL_OPS_LLM_MODE=hybrid
+RHEL_OPS_LLM_MODE=llm_first
 RHEL_OPS_LLM_PROVIDER=openai-compatible
 RHEL_OPS_LLM_BASE_URL=https://your-provider.example/v1
 RHEL_OPS_LLM_MODEL=your-tool-calling-model

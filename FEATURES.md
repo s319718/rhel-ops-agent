@@ -176,15 +176,15 @@ change system language to Chinese
 
 ## 5. LLM 语义理解升级
 
-LLM 是可选层，默认关闭。推荐使用支持 Function Calling 和结构化输出的 Qwen2.5-Instruct。
+LLM 是可选层，默认关闭。推荐使用支持 Function Calling 和结构化输出的智谱 GLM（`glm-4-plus`）。
 
 模型安装、Function Calling 协议和故障排查见 [LLM.md](LLM.md)。
 
-最简单的 Qwen API 接入：
+最简单的 GLM API 接入：
 
 ```bash
 sudo bash install.sh
-sudo bash scripts/setup-qwen-api.sh
+sudo bash scripts/setup-glm-api.sh
 sudo rhel-agent llm-test
 ```
 

@@ -2,10 +2,13 @@ $ErrorActionPreference = "Stop"
 
 $projectRoot = Split-Path -Parent $PSScriptRoot
 $target = Join-Path $projectRoot ".env.windows"
-$key = $env:DASHSCOPE_API_KEY
+$key = $env:GLM_API_KEY
+if ([string]::IsNullOrWhiteSpace($key)) {
+    $key = $env:ZHIPU_API_KEY
+}
 
 if ([string]::IsNullOrWhiteSpace($key)) {
-    $secure = Read-Host "Enter DashScope API Key (input is hidden)" -AsSecureString
+    $secure = Read-Host "Enter Zhipu GLM API Key (input is hidden)" -AsSecureString
     $pointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secure)
     try {
         $key = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($pointer)
@@ -25,14 +28,14 @@ if ($key.IndexOf([char]13) -ge 0 -or $key.IndexOf([char]10) -ge 0) {
 
 $content = @(
     "RHEL_OPS_LLM_ENABLED=1",
-    "RHEL_OPS_LLM_MODE=hybrid",
-    "RHEL_OPS_LLM_PROVIDER=qwen",
-    "RHEL_OPS_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1",
-    "RHEL_OPS_LLM_MODEL=qwen-plus",
+    "RHEL_OPS_LLM_MODE=llm_first",
+    "RHEL_OPS_LLM_PROVIDER=openai-compatible",
+    "RHEL_OPS_LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4",
+    "RHEL_OPS_LLM_MODEL=glm-4-plus",
     "RHEL_OPS_LLM_API_KEY=$key",
-    "RHEL_OPS_LLM_TIMEOUT=20",
+    "RHEL_OPS_LLM_TIMEOUT=40",
     "RHEL_OPS_LLM_CONFIDENCE=0.55",
-    "RHEL_OPS_LLM_STRUCTURED_OUTPUT=1"
+    "RHEL_OPS_LLM_STRUCTURED_OUTPUT=0"
 ) -join [Environment]::NewLine
 
 [IO.File]::WriteAllText(
@@ -45,7 +48,7 @@ $key = $null
 $secure = $null
 
 Write-Host ""
-Write-Host "Qwen API configuration written to $target"
-Write-Host "Model: qwen-plus"
+Write-Host "GLM API configuration written to $target"
+Write-Host "Model: glm-4-plus (base: https://open.bigmodel.cn/api/paas/v4)"
 Write-Host "Linux commands remain simulated in the Windows demo."
 Write-Host "Double-click start-windows.bat to test."

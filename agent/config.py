@@ -118,7 +118,7 @@ class Settings:
             proposal_ttl_seconds=int(os.environ.get("RHEL_OPS_PROPOSAL_TTL", "900")),
             max_history_lines=int(os.environ.get("RHEL_OPS_HISTORY_LINES", "3000")),
             llm_enabled=_env_bool("RHEL_OPS_LLM_ENABLED"),
-            llm_mode=os.environ.get("RHEL_OPS_LLM_MODE", "hybrid").strip().lower(),
+            llm_mode=os.environ.get("RHEL_OPS_LLM_MODE", "llm_first").strip().lower(),
             llm_provider=llm_provider,
             llm_base_url=os.environ.get("RHEL_OPS_LLM_BASE_URL", default_llm_url).strip(),
             llm_model=os.environ.get("RHEL_OPS_LLM_MODEL", default_llm_model).strip(),

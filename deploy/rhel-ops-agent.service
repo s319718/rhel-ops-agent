@@ -17,6 +17,7 @@ RestartSec=3
 TimeoutStopSec=10
 UMask=0077
 PrivateTmp=true
+NoNewPrivileges=yes
 LimitNOFILE=4096
 
 [Install]

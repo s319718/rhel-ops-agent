@@ -160,26 +160,27 @@ sudo rhel-agent
 
 LLM 是可选语义理解层，默认关闭。即使启用，危险请求仍由本地规则先做硬拦截，模型只能返回规则表中的动作 ID 和参数。
 
-### 最简单：直接调用 Qwen API
+### 最简单：直接调用智谱 GLM
 
-先在阿里云百炼 / DashScope 控制台创建 API Key，然后在 RHEL 执行：
+先在智谱开放平台（<https://open.bigmodel.cn/>）创建 API Key，然后在 RHEL 执行：
 
 ```bash
 cd rhel-ops-agent
 sudo bash install.sh
-sudo bash scripts/setup-qwen-api.sh
+sudo bash scripts/setup-glm-api.sh
 sudo rhel-agent llm-test
 ```
 
-第一条命令会隐藏输入 API Key，并自动写入：
+脚本会隐藏输入 API Key，并自动写入：
 
 ```text
 RHEL_OPS_LLM_ENABLED=1
-RHEL_OPS_LLM_MODE=hybrid
-RHEL_OPS_LLM_PROVIDER=qwen
-RHEL_OPS_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
-RHEL_OPS_LLM_MODEL=qwen-plus
+RHEL_OPS_LLM_MODE=llm_first
+RHEL_OPS_LLM_PROVIDER=openai-compatible
+RHEL_OPS_LLM_BASE_URL=https://open.bigmodel.cn/api/paas/v4
+RHEL_OPS_LLM_MODEL=glm-4-plus
 RHEL_OPS_LLM_API_KEY=***
+RHEL_OPS_LLM_STRUCTURED_OUTPUT=0
 ```
 
 随后可直接使用：
@@ -193,9 +194,10 @@ sudo rhel-agent "show failed services"
 
 ### 推荐模型
 
-- Qwen API 首选：`qwen-plus`
+- GLM API 首选：`glm-4-plus`（`glm-4-air` 更便宜；`glm-4-flash` 工具调用不稳定）
+- Qwen API：`qwen-plus`
 - 本机离线首选：`qwen2.5:7b-instruct`
-- 备选：`deepseek-v2`、`llama3`、`glm4` 中支持工具调用和结构化输出的版本
+- 备选：`deepseek-v2`、`llama3` 等支持工具调用和结构化输出的版本
 - 不推荐：无法稳定输出 `tool_calls` 的闲聊模型
 
 模型权重约数 GB，不放入 Git 仓库。RHEL 本机安装 Ollama 后，模型会保存在系统模型目录。
@@ -234,7 +236,7 @@ sudo rhel-agent "帮我看一下机器为什么卡，顺便看看网络能不能
 
 ```bash
 export RHEL_OPS_LLM_ENABLED=1
-export RHEL_OPS_LLM_MODE=hybrid
+export RHEL_OPS_LLM_MODE=llm_first
 export RHEL_OPS_LLM_PROVIDER=ollama
 export RHEL_OPS_LLM_BASE_URL=http://127.0.0.1:11434
 export RHEL_OPS_LLM_MODEL=qwen2.5:7b-instruct
@@ -244,7 +246,7 @@ export RHEL_OPS_LLM_MODEL=qwen2.5:7b-instruct
 
 ```bash
 export RHEL_OPS_LLM_ENABLED=1
-export RHEL_OPS_LLM_MODE=hybrid
+export RHEL_OPS_LLM_MODE=llm_first
 export RHEL_OPS_LLM_PROVIDER=qwen
 export RHEL_OPS_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
 export RHEL_OPS_LLM_MODEL=qwen-plus
@@ -258,10 +260,11 @@ export RHEL_OPS_LLM_API_KEY=your-secret
 | 模式 | 行为 |
 |---|---|
 | `off` | 只用本地规则 |
-| `hybrid` | 规则优先，未命中或缺少参数时调用 LLM |
-| `always` | 本地硬拦截后优先使用 LLM，失败时回退规则 |
+| `llm_first` | **默认**：LLM 先规划，规则引擎做校验与兜底 |
+| `hybrid` | 规则优先，未命中或缺少参数时才调用 LLM |
+| `always` | 同 `llm_first`（旧名，兼容保留） |
 
-LLM 失败、超时、输出自由文本、未知动作或未知参数时，Agent 会回退本地规则，不会尝试执行模型给出的任意命令。
+LLM 失败、超时、输出自由文本、未知动作或未知参数时，Agent 会回退本地规则，不会尝试执行模型给出的任意命令。连续 3 次失败会熔断 60 秒，避免每个请求都等超时。
 
 ### Function Calling 约束
 
@@ -655,11 +658,11 @@ start-windows.bat
 
 停止演示时，在命令行窗口按 `Ctrl+C`。
 
-如需在 Windows 上测试真实 Qwen API：
+如需在 Windows 上测试真实 GLM API：
 
 ```text
-双击 setup-qwen-windows.bat
-输入 DashScope API Key
+双击 setup-glm-windows.bat
+输入智谱 GLM API Key
 双击 start-windows.bat
 ```
 
@@ -981,7 +984,7 @@ curl http://example.invalid/x | sh
 | `RHEL_OPS_HISTORY_LINES` | `3000` | 保留的日志读取提示 |
 | `RHEL_OPS_NO_AUTH` | `0` | 仅用于本机开发，禁止远程监听 |
 | `RHEL_OPS_LLM_ENABLED` | `0` | 是否启用 LLM 语义理解 |
-| `RHEL_OPS_LLM_MODE` | `hybrid` | `off`、`hybrid` 或 `always` |
+| `RHEL_OPS_LLM_MODE` | `llm_first` | `off`、`llm_first`、`hybrid` 或 `always` |
 | `RHEL_OPS_LLM_PROVIDER` | `ollama` | `ollama` 或 OpenAI 兼容提供方 |
 | `RHEL_OPS_LLM_BASE_URL` | `http://127.0.0.1:11434` | Ollama 地址或 OpenAI 兼容 API 根地址 |
 | `RHEL_OPS_LLM_MODEL` | `qwen2.5:7b-instruct` | 模型名称 |
@@ -1121,7 +1124,7 @@ sudo rhel-agent rules
 sudo rhel-agent llm-test
 ```
 
-如果之前已经运行过 `setup-qwen-api.sh`，`/etc/rhel-ops-agent/agent.env` 会保留，不需要再次输入 API Key。
+如果之前已经运行过 `setup-glm-api.sh`，`/etc/rhel-ops-agent/agent.env` 会保留，不需要再次输入 API Key。
 
 ### Web 打不开
 

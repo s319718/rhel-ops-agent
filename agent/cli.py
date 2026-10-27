@@ -127,6 +127,19 @@ def _print_plan(plan: dict[str, Any]) -> None:
             )
         )
         return
+    if plan["status"] == "escalate":
+        incident = plan.get("incident", {})
+        if language == "en":
+            print(incident.get("title_en", "Emergency"))
+            print(plan.get("message", ""))
+            for index, step in enumerate(incident.get("steps_en", []), 1):
+                print("%d. %s" % (index, step))
+        else:
+            print(incident.get("title_zh", "紧急事件"))
+            print(plan.get("message", ""))
+            for index, step in enumerate(incident.get("steps_zh", []), 1):
+                print("%d. %s" % (index, step))
+        return
     if plan["status"] == "unsupported":
         print(plan["message"])
         suggestions = plan.get("suggestions", [])

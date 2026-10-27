@@ -63,10 +63,41 @@ CONFIRMATION_PHRASES_EN = {
     "install_security_update": "Confirm security update installation",
 }
 
+NEGATION_PATTERNS = [
+    re.compile(
+        r"(不要|别|不用|无需|禁止|停止|取消)\s*(再)?\s*"
+        r"(删除|删掉|删|清空|清理|重启|关机|关闭|停掉|停止|禁用|修改|改掉|移除)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(don'?t|do not|never|stop|cancel)\s+"
+        r"(delete|remove|erase|restart|reboot|shutdown|disable|modify|change)\b",
+        re.IGNORECASE,
+    ),
+]
+
+EMERGENCY_PATTERNS = [
+    re.compile(
+        r"(误删|不小心删|删库|删除了.{0,8}(数据库|数据)|"
+        r"(删除|删掉).{0,6}数据库|数据库.{0,6}(被删|没了|丢失|删了)|数据丢失)",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\b(drop\s+database|truncate\s+table|data\s+loss|"
+        r"lost\s+(the\s+)?database|deleted\s+(the\s+)?database)\b",
+        re.IGNORECASE,
+    ),
+    re.compile(
+        r"\brm\s+-rf\b.{0,60}\b(data|mysql|postgres|mongo|redis)\b",
+        re.IGNORECASE,
+    ),
+]
+
 PLAN_MESSAGES = {
     "zh": {
         "empty": "请输入你想完成的操作，例如：查看磁盘空间。",
         "blocked": "已识别并拦截高风险操作，没有执行任何命令。",
+        "negated": "识别到“不要/别……”这样的否定语义，没有生成任何操作。",
         "unsupported": "没有找到受支持的操作。可以换一种说法，例如“查看磁盘空间”或“你好”，也可以在 /help 或规则库中查看可用指令。",
         "needs_input": "还需要补充一些信息，确认后我会生成完整操作计划。",
         "ready": "已生成操作计划。请先核对每一步，再决定是否执行。",
@@ -76,6 +107,7 @@ PLAN_MESSAGES = {
     "en": {
         "empty": "Enter an operation, for example: show disk usage.",
         "blocked": "A high-risk operation was detected and blocked. No command was executed.",
+        "negated": "The request was negated (for example \"don't delete\"), so no operation was generated.",
         "unsupported": "No supported operation was found. Try a request such as \"show disk usage\" or \"hello\", or use /help to see available commands.",
         "needs_input": "More information is required before a complete operation plan can be generated.",
         "ready": "The operation plan is ready. Review every step before execution.",
@@ -405,6 +437,7 @@ class RuleEngine:
                 extra_data = json.load(handle)
             actions.extend(extra_data.get("actions", []))
         blocked = data.get("blocked_patterns", [])
+        self._validate_actions(actions)
         seen = set()
         for action in actions:
             if action["id"] in seen:
@@ -432,6 +465,77 @@ class RuleEngine:
             }
             for item in blocked
         ]
+
+    def _validate_actions(self, actions: list[dict[str, Any]]) -> None:
+        """加载期自检：坏规则直接拒绝启动，避免运行期变成安全漏洞。"""
+        for action in actions:
+            action_id = action.get("id")
+            if not action_id:
+                raise RuleError("Action without id")
+            if not action.get("patterns"):
+                raise RuleError("Action %s has no patterns" % action_id)
+
+            params = action.get("params") or {}
+            for name, definition in params.items():
+                if not re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", name):
+                    raise RuleError("Invalid parameter name %s in %s" % (name, action_id))
+                pattern = definition.get("pattern")
+                if pattern:
+                    try:
+                        re.compile(pattern)
+                    except re.error as exc:
+                        raise RuleError(
+                            "Invalid parameter pattern in %s.%s: %s"
+                            % (action_id, name, exc)
+                        )
+
+            if not action.get("commands"):
+                raise RuleError("Action %s has no commands" % action_id)
+
+            for field in ("commands", "post_check"):
+                for argv in action.get(field) or []:
+                    self._validate_argv_template(argv, params, action_id, field)
+
+    def _validate_argv_template(
+        self,
+        argv: Any,
+        params: dict[str, Any],
+        action_id: str,
+        field: str,
+    ) -> None:
+        if not isinstance(argv, list) or not argv:
+            raise RuleError("Empty argv in %s.%s" % (action_id, field))
+        if not isinstance(argv[0], str) or not argv[0]:
+            raise RuleError("Empty binary in %s.%s" % (action_id, field))
+        for arg in argv:
+            if not isinstance(arg, str):
+                raise RuleError("Invalid argument in %s.%s" % (action_id, field))
+            if any(ch in arg for ch in ";&|$<>`\n\r"):
+                raise RuleError(
+                    "Shell metacharacter in %s.%s: %r" % (action_id, field, arg)
+                )
+            names = re.findall(r"\{\{([A-Za-z_][A-Za-z0-9_]*)\}\}", arg)
+            for name in names:
+                if name not in params:
+                    raise RuleError(
+                        "Unknown placeholder %s in %s.%s" % (name, action_id, field)
+                    )
+            if "{{" in re.sub(r"\{\{[A-Za-z_][A-Za-z0-9_]*\}\}", "", arg) or "}}" in re.sub(
+                r"\{\{[A-Za-z_][A-Za-z0-9_]*\}\}", "", arg
+            ):
+                raise RuleError(
+                    "Malformed placeholder in %s.%s: %r" % (action_id, field, arg)
+                )
+
+        if argv[0] == "rm":
+            if len(argv) < 4 or argv[1] != "-rf" or argv[2] != "--":
+                raise RuleError("Unsafe rm template in %s" % action_id)
+            target = argv[3]
+            if not (
+                target.startswith("/")
+                or re.fullmatch(r"\{\{[A-Za-z_][A-Za-z0-9_]*\}\}", target)
+            ):
+                raise RuleError("Unsafe rm target in %s" % action_id)
 
     def public_rules(self) -> dict[str, Any]:
         actions = []
@@ -842,6 +946,52 @@ class RuleEngine:
                     )
         return True, ""
 
+    def _detect_negation(self, message: str) -> bool:
+        """识别“不要/别/取消 + 危险动作”，避免把拒绝执行当成执行。"""
+        return any(pattern.search(message) for pattern in NEGATION_PATTERNS)
+
+    def _detect_emergency(self, message: str) -> bool:
+        """数据丢失/删库这类请求不进入规划，直接升级给人工。"""
+        return any(pattern.search(message) for pattern in EMERGENCY_PATTERNS)
+
+    def escalate_plan(self, language: str) -> dict[str, Any]:
+        zh_steps = [
+            "立即停止所有写入：暂停应用、定时任务和同步脚本，避免覆盖可恢复数据。",
+            "不要重启数据库，也不要运行 fsck、修复工具或数据恢复软件。",
+            "保留现场：检查是否还有进程持有被删文件（lsof | grep deleted），先别杀进程。",
+            "立刻检查备份、binlog/WAL、快照和从库；先停止从库复制，防止删除同步过去。",
+            "云数据库请在控制台使用时间点恢复（PITR），不要手动改服务器文件。",
+            "马上通知 DBA 和负责人，说明发生时间和已经做过的操作。",
+        ]
+        en_steps = [
+            "Stop all writes immediately: pause applications, cron jobs, and sync scripts.",
+            "Do not restart the database and do not run fsck, repair tools, or recovery software.",
+            "Preserve the scene: check for processes still holding deleted files (lsof | grep deleted).",
+            "Check backups, binlogs/WAL archives, snapshots, and replicas; stop replication first.",
+            "For managed databases, use point-in-time recovery in the console, not manual file changes.",
+            "Notify the DBA and your manager immediately with the timeline and actions already taken.",
+        ]
+        return {
+            "status": "escalate",
+            "language": language,
+            "message": (
+                "这看起来是数据丢失或紧急事件，我不会生成任何操作。请立即按下面的步骤处理。"
+                if language == "zh"
+                else "This looks like data loss or an emergency. I will not generate any "
+                "operation. Follow the steps below immediately."
+            ),
+            "incident": {
+                "title_zh": "疑似数据丢失 / 紧急事件",
+                "title_en": "Suspected data loss / emergency",
+                "reason_zh": "该请求超出受控运维动作范围，Agent 不应自动执行任何命令。",
+                "reason_en": "The request is outside the controlled operation surface. "
+                "The agent must not execute anything automatically.",
+                "steps_zh": zh_steps,
+                "steps_en": en_steps,
+            },
+            "steps": [],
+        }
+
     def _search(self, message: str) -> tuple[list[dict[str, Any]], Optional[dict[str, Any]]]:
         blocked = None
         for item in self._compiled_blocked:
@@ -935,6 +1085,31 @@ class RuleEngine:
                 "message": messages["empty"],
                 "steps": [],
             }
+        if self._detect_negation(message):
+            title = "已按否定语义拦截" if language == "zh" else "Negated request blocked"
+            reason = (
+                "你说的是“不要/别……”，系统没有生成任何操作。"
+                if language == "zh"
+                else "The request was negated, so no operation was generated."
+            )
+            return {
+                "status": "blocked",
+                "language": language,
+                "blocked": {
+                    "id": "negation_guard",
+                    "title_zh": "已按否定语义拦截",
+                    "title_en": "Negated request blocked",
+                    "title": title,
+                    "severity": "high",
+                    "reason_zh": reason,
+                    "reason_en": reason,
+                    "reason": reason,
+                },
+                "message": messages["negated"],
+                "steps": [],
+            }
+        if self._detect_emergency(message):
+            return self.escalate_plan(language)
         overrides = overrides or {}
         context = context or {}
         matches, blocked = self._search(message)
@@ -1084,6 +1259,12 @@ class RuleEngine:
                 "confirmation_phrase_en",
                 CONFIRMATION_PHRASES_EN.get(action["id"], "Confirm execution"),
             )
+            confirmation_phrase_zh = action.get("confirmation_phrase", "确认执行")
+            if action["id"] == "delete_path":
+                # 删除类操作必须复述目标路径，避免一句固定确认语就放行
+                target = str(params.get("path", ""))
+                confirmation_phrase_en = "Confirm delete %s" % target
+                confirmation_phrase_zh = "确认删除 %s" % target
             steps.append(
                 {
                     "action_id": action["id"],
@@ -1114,7 +1295,7 @@ class RuleEngine:
                     "confirmation_phrase": (
                         confirmation_phrase_en
                         if language == "en"
-                        else action.get("confirmation_phrase", "确认执行")
+                        else confirmation_phrase_zh
                     ),
                     "confirmation_phrase_en": confirmation_phrase_en,
                     "commands": self.build_commands(action, params)

@@ -57,6 +57,7 @@ install -m 0755 "${SOURCE_DIR}/scripts/live-audit-test.sh" "${INSTALL_DIR}/scrip
 install -m 0755 "${SOURCE_DIR}/scripts/install-audit-rules.sh" "${INSTALL_DIR}/scripts/install-audit-rules.sh"
 install -m 0755 "${SOURCE_DIR}/scripts/setup-ollama.sh" "${INSTALL_DIR}/scripts/setup-ollama.sh"
 install -m 0755 "${SOURCE_DIR}/scripts/setup-qwen-api.sh" "${INSTALL_DIR}/scripts/setup-qwen-api.sh"
+install -m 0755 "${SOURCE_DIR}/scripts/setup-glm-api.sh" "${INSTALL_DIR}/scripts/setup-glm-api.sh"
 install -m 0644 "${SOURCE_DIR}/scripts/api_smoke_test.py" "${INSTALL_DIR}/scripts/api_smoke_test.py"
 
 WRAPPER_TMP="$(mktemp)"
